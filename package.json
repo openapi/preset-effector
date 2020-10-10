@@ -1,6 +1,6 @@
 {
   "name": "@sergeysova/swagger-to-js-preset",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Generate API layer from Swagger by swagger-to-js",
   "main": "index.js",
   "scripts": {
