@@ -1,0 +1,36 @@
+{
+  "name": "@sergeysova/swagger-to-js-preset",
+  "version": "0.1.0",
+  "description": "Generate API layer from Swagger by swagger-to-js",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "files": ["index.js"],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sergeysova/swagger-to-js-preset.git"
+  },
+  "keywords": ["swagger", "js", "openapi", "preset"],
+  "author": "Sergey Sova <mail@sergeysova.com> (https://sova.dev/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sergeysova/swagger-to-js-preset/issues"
+  },
+  "homepage": "https://github.com/sergeysova/swagger-to-js-preset#readme",
+  "devDependencies": {
+    "@eslint-kit/eslint-config-base": "^2.1.2",
+    "@eslint-kit/eslint-config-node": "^2.0.0",
+    "@eslint-kit/eslint-config-prettier": "^2.0.0",
+    "@sergeysova/swagger-to-js": "^1.2.0",
+    "@types/jest": "^26.0.14",
+    "babel-eslint": "^10.1.0",
+    "change-case": "^4.1.1",
+    "eslint": "^7.11.0",
+    "eslint-plugin-jest": "^24.1.0",
+    "husky": "^4.3.0",
+    "jest": "^26.5.2",
+    "lint-staged": "^10.4.0",
+    "prettier": "^2.1.2"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "extends": ["@eslint-kit/base", "@eslint-kit/node", "@eslint-kit/prettier"],
+  "parser": "babel-eslint",
+  "env": {
+    "node": true
+  },
+  "overrides": [
+    {
+      "files": ["tests/**", "*.test.js"],
+      "plugins": ["jest"],
+      "env": {
+        "node": true,
+        "jest": true
+      }
+    }
+  ]
+}
