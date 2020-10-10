@@ -4,7 +4,11 @@
   "description": "Generate API layer from Swagger by swagger-to-js",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "prepublishOnly": "yarn test"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "files": ["index.js"],
   "repository": {
