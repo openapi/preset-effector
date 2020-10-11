@@ -4,6 +4,9 @@
   "env": {
     "node": true
   },
+  "rules": {
+    "no-use-before-define": "off"
+  },
   "overrides": [
     {
       "files": ["tests/**", "*.test.js"],

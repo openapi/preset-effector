@@ -10,7 +10,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": ["index.js"],
+  "files": ["index.js", "lib", "!*.test.js"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sergeysova/swagger-to-js-preset.git"
@@ -35,6 +35,7 @@
     "husky": "^4.3.0",
     "jest": "^26.5.2",
     "lint-staged": "^10.4.0",
-    "prettier": "^2.1.2"
+    "prettier": "^2.1.2",
+    "typed-contracts": "^2.3.0"
   }
 }
