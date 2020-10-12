@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 import * as typed from 'typed-contracts';
 import { createEffect } from 'effector';
 
@@ -33,7 +34,7 @@ function throwWith<T>(
   contract: typed.Contract<T>,
   status: string,
   value: unknown,
-) {
+): never {
   const error = parseWith(name, contract, value);
   throw { status, error };
 }
@@ -44,7 +45,6 @@ interface AccessRecoverySendEmail {
 //#endregion prebuilt code
 
 const accessRecoverySendEmailOk = typed.undef;
-const accessRecoverySendEmailDone = typed.union(accessRecoverySendEmailOk);
 export interface AccessRecoverySendEmailDone {
   status: 'ok';
   answer: typed.Get<typeof accessRecoverySendEmailOk>;
