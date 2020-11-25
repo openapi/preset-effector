@@ -35,14 +35,14 @@ function parseWith<T>(
   return parsed;
 }
 
-function throwWith<T>(
+function createError<T>(
   name: string,
   contract: typed.Contract<T>,
   status: string,
   value: unknown,
 ) {
   const error = parseWith(name, contract, value);
-  throw { status, error };
+  return { status, error };
 }
 
 interface AccessRecoverySendEmail {
@@ -81,14 +81,14 @@ export const oauthAuthorizeRequestFx = createEffect<
           answer: parseWith(name, oauthAuthorizeRequestOk, answer.body),
         };
       case 400:
-        throwWith(
+        throw createError(
           name,
           oauthAuthorizeRequestBadRequest,
           'bad_request',
           answer.body,
         );
       case 500:
-        throwWith(
+        throw createError(
           name,
           oauthAuthorizeRequestInternalServerError,
           'internal_server_error',
@@ -135,9 +135,14 @@ export const oauthTokenFx = createEffect<
           answer: parseWith(name, oauthTokenCreated, answer.body),
         };
       case 400:
-        throwWith(name, oauthTokenBadRequest, 'bad_request', answer.body);
+        throw createError(
+          name,
+          oauthTokenBadRequest,
+          'bad_request',
+          answer.body,
+        );
       case 500:
-        throwWith(
+        throw createError(
           name,
           oauthTokenInternalServerError,
           'internal_server_error',
@@ -179,14 +184,14 @@ export const accessRecoverySendEmailFx = createEffect<
           answer: parseWith(name, accessRecoverySendEmailOk, answer.body),
         };
       case 400:
-        throwWith(
+        throw createError(
           name,
           accessRecoverySendEmailBadRequest,
           'bad_request',
           answer.body,
         );
       case 500:
-        throwWith(
+        throw createError(
           name,
           accessRecoverySendEmailInternalServerError,
           'internal_server_error',
@@ -228,14 +233,14 @@ export const accessRecoverySetPasswordFx = createEffect<
           answer: parseWith(name, accessRecoverySetPasswordOk, answer.body),
         };
       case 400:
-        throwWith(
+        throw createError(
           name,
           accessRecoverySetPasswordBadRequest,
           'bad_request',
           answer.body,
         );
       case 500:
-        throwWith(
+        throw createError(
           name,
           accessRecoverySetPasswordInternalServerError,
           'internal_server_error',
@@ -281,9 +286,14 @@ export const viewerGetFx = createEffect<
           answer: parseWith(name, viewerGetOk, answer.body),
         };
       case 400:
-        throwWith(name, viewerGetBadRequest, 'bad_request', answer.body);
+        throw createError(
+          name,
+          viewerGetBadRequest,
+          'bad_request',
+          answer.body,
+        );
       case 500:
-        throwWith(
+        throw createError(
           name,
           viewerGetInternalServerError,
           'internal_server_error',
@@ -328,9 +338,14 @@ export const registerRequestFx = createEffect<
           answer: parseWith(name, registerRequestCreated, answer.body),
         };
       case 400:
-        throwWith(name, registerRequestBadRequest, 'bad_request', answer.body);
+        throw createError(
+          name,
+          registerRequestBadRequest,
+          'bad_request',
+          answer.body,
+        );
       case 500:
-        throwWith(
+        throw createError(
           name,
           registerRequestInternalServerError,
           'internal_server_error',
@@ -372,14 +387,14 @@ export const registerConfirmationFx = createEffect<
           answer: parseWith(name, registerConfirmationCreated, answer.body),
         };
       case 400:
-        throwWith(
+        throw createError(
           name,
           registerConfirmationBadRequest,
           'bad_request',
           answer.body,
         );
       case 500:
-        throwWith(
+        throw createError(
           name,
           registerConfirmationInternalServerError,
           'internal_server_error',
@@ -424,9 +439,14 @@ export const sessionCreateFx = createEffect<
           answer: parseWith(name, sessionCreateCreated, answer.body),
         };
       case 400:
-        throwWith(name, sessionCreateBadRequest, 'bad_request', answer.body);
+        throw createError(
+          name,
+          sessionCreateBadRequest,
+          'bad_request',
+          answer.body,
+        );
       case 500:
-        throwWith(
+        throw createError(
           name,
           sessionCreateInternalServerError,
           'internal_server_error',
@@ -474,9 +494,14 @@ export const sessionGetFx = createEffect<
           answer: parseWith(name, sessionGetOk, answer.body),
         };
       case 401:
-        throwWith(name, sessionGetUnauthorized, 'unauthorized', answer.body);
+        throw createError(
+          name,
+          sessionGetUnauthorized,
+          'unauthorized',
+          answer.body,
+        );
       case 500:
-        throwWith(
+        throw createError(
           name,
           sessionGetInternalServerError,
           'internal_server_error',
