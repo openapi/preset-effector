@@ -22,7 +22,7 @@ describe('CLI', () => {
       const fixturePath = path.join(fixturesDir, caseFile);
       const { cli, fileTypes, fileCode, configContent } = require(fixturePath);
 
-      let command = `yarn swagger-to-js --output-dir ./TEST_API ${cli}`;
+      let command = `yarn openapi --output-dir ./TEST_API ${cli}`;
 
       if (configContent) {
         writeFileSync('./TEST_CONFIG.js', configContent);

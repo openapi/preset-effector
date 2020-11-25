@@ -1,7 +1,7 @@
 {
-  "name": "@sergeysova/swagger-to-js-preset",
+  "name": "effector-openapi-preset",
   "version": "0.1.1",
-  "description": "Generate API layer from Swagger by swagger-to-js",
+  "description": "Generate API layer from Swagger by openapi",
   "main": "index.js",
   "scripts": {
     "test": "jest",
@@ -13,21 +13,21 @@
   "files": ["index.js", "lib", "!*.test.js"],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/sergeysova/swagger-to-js-preset.git"
+    "url": "git+https://github.com/openapijs/effector-preset.git"
   },
   "keywords": ["swagger", "js", "openapi", "preset"],
   "author": "Sergey Sova <mail@sergeysova.com> (https://sova.dev/)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/sergeysova/swagger-to-js-preset/issues"
+    "url": "https://github.com/openapijs/effector-preset/issues"
   },
-  "homepage": "https://github.com/sergeysova/swagger-to-js-preset#readme",
+  "homepage": "https://github.com/openapijs/effector-preset#readme",
   "devDependencies": {
     "@eslint-kit/eslint-config-base": "^2.1.2",
     "@eslint-kit/eslint-config-node": "^2.0.0",
     "@eslint-kit/eslint-config-prettier": "^2.0.0",
     "@eslint-kit/eslint-config-typescript": "^3.1.2",
-    "@sergeysova/swagger-to-js": "^1.2.0",
+    "openapi": "^1.0.0",
     "@types/jest": "^26.0.14",
     "@typescript-eslint/parser": "^4.4.0",
     "babel-eslint": "^10.1.0",

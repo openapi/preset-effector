@@ -1,30 +1,30 @@
-# @sergeysova/swagger-to-js-preset
+# effector-openapi-preset
 
 ## Usage
 
-#### Install swagger-to-js and preset
+#### Install openapi and preset
 
 ```shell
-yarn add -D swagger-to-js@^0.2.0 @sergeysova/swagger-to-js-preset
+yarn add -D openapi@^1.0.0 effector-openapi-preset
 ```
 
 #### Create config
 
 ```js
-// swagger-to-js.config.js
+// openapi.config.js
 module.exports = {
   file: 'path to local or remote swagger v2 or v3 spec',
   outputDir: 'relative path to generated api directory',
-  presets: ['@sergeysova/swagger-to-js-preset'],
+  presets: ['effector-openapi-preset'],
 };
 ```
 
 #### Run generation
 
 ```shell
-yarn swagger-to-js
+yarn openapi
 # or
-npx swagger-to-js
+npx openapi
 ```
 
 #### Review generated files

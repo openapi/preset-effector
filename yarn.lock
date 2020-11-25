@@ -540,21 +540,6 @@
   resolved "https://registry.yarnpkg.com/@rushstack/eslint-patch/-/eslint-patch-1.0.5.tgz#aed6bc40ea693d7cf78242c595c0fa8b48b9548a"
   integrity sha512-B/ebr3o/Irp/hBKRsHCqh/scUTWplQTkgwHoslLsPXR/cZm0TldhE8L57/sfzfCEMCxV7HGpysoHgHlE/DykiA==
 
-"@sergeysova/swagger-to-js@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@sergeysova/swagger-to-js/-/swagger-to-js-1.2.0.tgz#54b3168e75fa1b697bab998d9d8e28594f3f5f08"
-  integrity sha512-+xdh9V0ZutJtbbyeHQE6J917ky66LtsSKBmedUAir86wsp3HydXVpBZ55dHpgPbS0urBiEYhhX7ihNeXY7GYdg==
-  dependencies:
-    "@types/jest" "^26.0.14"
-    change-case "^4.1.1"
-    commander "^6.1.0"
-    cosmiconfig "^6.0.0"
-    is-url "^1.2.4"
-    js-yaml "^3.13.1"
-    node-fetch "^2.6.0"
-    object-hash "^2.0.3"
-    url-parse "^1.4.7"
-
 "@sinonjs/commons@^1.7.0":
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/@sinonjs/commons/-/commons-1.8.1.tgz#e7df00f98a203324f6dc7cc606cad9d4a8ab2217"
@@ -3738,6 +3723,21 @@ onetime@^5.1.0:
   integrity sha512-kbpaSSGJTWdAY5KPVeMOKXSrPtr8C8C7wodJbcsd51jRnmD+GZu8Y0VoU6Dm5Z4vWr0Ig/1NKuWRKf7j5aaYSg==
   dependencies:
     mimic-fn "^2.1.0"
+
+openapi@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/openapi/-/openapi-1.0.0.tgz#4871ac728220249720c2f6f4c7c8bd1f19c364ed"
+  integrity sha512-lDdAgJUklX/z2xzWXTynz6zoL3/xa7klY/t6giz4oQrShB/WzKG5HScP0e0TvyuvcMAhjSL199Ty7PFus7gbJQ==
+  dependencies:
+    "@types/jest" "^26.0.14"
+    change-case "^4.1.1"
+    commander "^6.1.0"
+    cosmiconfig "^6.0.0"
+    is-url "^1.2.4"
+    js-yaml "^3.13.1"
+    node-fetch "^2.6.0"
+    object-hash "^2.0.3"
+    url-parse "^1.4.7"
 
 opencollective-postinstall@^2.0.2:
   version "2.0.3"
