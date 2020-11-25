@@ -8,22 +8,6 @@ const exportConst = template(`export const %%name%% = %%value%%;`, {
   plugins: ['typescript'],
 });
 
-const typeStatus = template(
-  `{
-  status: %%status%%;
-  answer: typed.Get<typeof %%contractName%%>;
-}`,
-  { plugins: ['typescript'] },
-);
-
-const typeFail = template(
-  `type No = {
-  status: %%status%%;
-  error: { status: %%status%%; error: typed.Get<typeof %%contractName%%>; };
-}`,
-  { plugins: ['typescript'] },
-);
-
 const handlerFunction = template(
   `{
   const name = %%name%%;
@@ -219,10 +203,14 @@ function createEffect(
 }
 
 function renderProgram(nodes) {
-  return generate(t.program([...nodes]), {
+  return renderAst(t.program([...nodes]));
+}
+
+function renderAst(ast) {
+  return generate(ast, {
     plugins: ['typescript'],
     jsescOption: { compact: false },
   }).code;
 }
 
-module.exports = { createEffect, renderProgram };
+module.exports = { createEffect, renderProgram, renderAst };
