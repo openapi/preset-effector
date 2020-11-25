@@ -8,6 +8,22 @@ const exportConst = template(`export const %%name%% = %%value%%;`, {
   plugins: ['typescript'],
 });
 
+const typeStatus = template(
+  `{
+  status: %%status%%;
+  answer: typed.Get<typeof %%contractName%%>;
+}`,
+  { plugins: ['typescript'] },
+);
+
+const typeFail = template(
+  `type No = {
+  status: %%status%%;
+  error: { status: %%status%%; error: typed.Get<typeof %%contractName%%>; };
+}`,
+  { plugins: ['typescript'] },
+);
+
 const handlerFunction = template(
   `{
   const name = %%name%%;
@@ -46,12 +62,97 @@ const caseFail = template(`
   );
 `);
 
+function contractGet({ contractName }) {
+  return t.tsTypeReference(
+    t.tsQualifiedName(t.identifier('typed'), t.identifier('Get')),
+    t.tsTypeParameterInstantiation([
+      t.tsTypeQuery(t.identifier(changeCase.camelCase(contractName))),
+    ]),
+  );
+}
+
+function createTypeDoneVariant({ status, contractName }) {
+  /**
+   * status: 'ok';
+   * answer: typed.Get<typeof registerRequestOk>;
+   */
+  return t.tsTypeLiteral([
+    t.tsPropertySignature(
+      t.identifier('status'),
+      t.tsTypeAnnotation(t.tsLiteralType(t.stringLiteral(status))),
+    ),
+    t.tsPropertySignature(
+      t.identifier('answer'),
+      t.tsTypeAnnotation(contractGet({ contractName })),
+    ),
+  ]);
+}
+
+function createDone(name, responses) {
+  const variants = Object.keys(responses)
+    .filter((code) => code < 400)
+    .map((code) =>
+      createTypeDoneVariant({
+        status: changeCase.snakeCase(status[code].code),
+        contractName: `${name}${changeCase.pascalCase(status[code].code)}`,
+      }),
+    );
+  return t.exportNamedDeclaration(
+    t.tsTypeAliasDeclaration(
+      t.identifier(`${changeCase.pascalCase(name)}Done`),
+      null,
+      t.tsUnionType(variants),
+    ),
+  );
+}
+
+function createTypeFailVariant({ status, contractName }) {
+  /**
+   * status: %%status%%;
+   * error: typed.Get<typeof %%contractName%%>;
+   */
+  return t.tsTypeLiteral([
+    t.tsPropertySignature(
+      t.identifier('status'),
+      t.tsTypeAnnotation(t.tsLiteralType(t.stringLiteral(status))),
+    ),
+    t.tsPropertySignature(
+      t.identifier('error'),
+      t.tsTypeAnnotation(contractGet({ contractName })),
+    ),
+  ]);
+}
+
+function createFail(name, responses) {
+  const variants = Object.keys(responses)
+    .filter((code) => code >= 400)
+    .map((code) =>
+      createTypeFailVariant({
+        status: changeCase.snakeCase(status[code].code),
+        contractName: `${name}${changeCase.pascalCase(status[code].code)}`,
+      }),
+    );
+  return t.exportNamedDeclaration(
+    t.tsTypeAliasDeclaration(
+      t.identifier(`${changeCase.pascalCase(name)}Fail`),
+      null,
+      t.tsUnionType([
+        ...variants,
+        t.tsTypeReference(t.identifier('GenericErrors')),
+      ]),
+    ),
+  );
+}
+
 function createEffect(
   { name, path, method },
   { description, requestBody, responses },
 ) {
   const constName = changeCase.camelCase(name);
   const TypeName = changeCase.pascalCase(name);
+
+  const doneTypes = createDone(name, responses);
+  const failTypes = createFail(name, responses);
 
   const cases = Object.keys(responses).map((_code) => {
     const code = Number.parseInt(_code, 10);
@@ -113,87 +214,15 @@ function createEffect(
     value: effectCall,
   });
   t.addComment(expression, 'leading', description);
-  return expression;
+
+  return [doneTypes, failTypes, expression];
 }
 
-function renderRequest() {
-  const ast = createEffect(
-    {
-      name: 'register-confirmation',
-      path: '/register/confirmation',
-      method: 'post',
-    },
-    {
-      operationId: 'accessRecoverySendEmail',
-      tags: ['Access Recovery'],
-      description: 'Send password recovery confirmation code to email',
-      requestBody: {
-        required: true,
-        content: {
-          'application/json': {
-            schema: {
-              type: 'object',
-              required: ['email'],
-              properties: {
-                email: {
-                  type: 'string',
-                  format: 'email',
-                  example: 'user@gmail.com',
-                },
-              },
-            },
-          },
-        },
-      },
-      responses: {
-        200: {
-          description: 'Password changed successfully',
-        },
-        202: {
-          description: 'Reset code or password is invalid',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['error'],
-                properties: {
-                  error: {
-                    type: 'string',
-                    enum: ['invalid_email', 'invalid_password'],
-                  },
-                },
-              },
-            },
-          },
-        },
-        400: {
-          description: 'Reset code or password is invalid',
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['error'],
-                properties: {
-                  error: {
-                    type: 'string',
-                    enum: ['invalid_email', 'invalid_password'],
-                  },
-                },
-              },
-            },
-          },
-        },
-        500: {
-          description: 'Something goes wrong',
-        },
-      },
-    },
-  );
-
-  return generate(ast, {
+function renderProgram(nodes) {
+  return generate(t.program([...nodes]), {
     plugins: ['typescript'],
     jsescOption: { compact: false },
   }).code;
 }
 
-module.exports = { renderRequest };
+module.exports = { createEffect, renderProgram };
