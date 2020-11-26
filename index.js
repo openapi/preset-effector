@@ -1,5 +1,5 @@
 const { compileTemplate } = require('./lib/template');
-const { renderRequest } = require('./lib/request');
+const { renderProgram, createEffect } = require('./src/index');
 
 const BEFORE = `
 // {{TITLE}} {{VERSION}}
@@ -39,14 +39,14 @@ function parseWith<T>(
   return parsed;
 }
 
-function throwWith<T>(
+function createError<T>(
   name: string,
   contract: typed.Contract<T>,
   status: string,
   value: unknown,
 ) {
   const error = parseWith(name, contract, value);
-  throw { status, error };
+  return { status, error };
 }
 
 interface AccessRecoverySendEmail {
@@ -80,9 +80,8 @@ module.exports = {
   ) =>
     compileTemplate(METHOD, {
       METHOD_NAME: changeCase.camelCase(name),
-      METHOD_CONTENT: renderRequest(
-        { name, path: url, method },
-        requestSwaggerData,
+      METHOD_CONTENT: renderProgram(
+        createEffect({ name, path: url, method }, requestSwaggerData),
       ),
     }),
 };

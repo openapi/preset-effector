@@ -143,7 +143,5 @@ test('oneOf', () => {
 });
 
 test('nullContract', () => {
-  expect(renderAst(createNullContract())).toMatchInlineSnapshot(
-    `"typed.nul.optional"`,
-  );
+  expect(renderAst(createNullContract())).toMatchInlineSnapshot(`"typed.nul"`);
 });

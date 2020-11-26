@@ -91,7 +91,7 @@ test('render', () => {
     ),
   ).toMatchInlineSnapshot(`
     "/* Password changed successfully */
-    export const registerConfirmationOk = typed.nul.optional;
+    export const registerConfirmationOk = typed.nul;
 
     /* Reset code or password is invalid */
     export const registerConfirmationAccepted = typed.object({
@@ -111,7 +111,7 @@ test('render', () => {
     });
 
     /* Something goes wrong */
-    export const registerConfirmationInternalServerError = typed.nul.optional;
+    export const registerConfirmationInternalServerError = typed.nul;
     export type RegisterConfirmationFail = {
       status: \\"bad_request\\";
       error: typed.Get<typeof registerConfirmationBadRequest>;

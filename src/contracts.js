@@ -83,10 +83,11 @@ function createContract(schema, required = true) {
 }
 
 function createNullContract() {
-  return t.memberExpression(
-    t.memberExpression(t.identifier('typed'), t.identifier('nul')),
-    t.identifier('optional'),
-  );
+  // return t.memberExpression(
+  //   t.memberExpression(t.identifier('typed'), t.identifier('nul')),
+  //   t.identifier('optional'),
+  // );
+  return t.memberExpression(t.identifier('typed'), t.identifier('nul'));
 }
 
 function addComment(node, text) {
