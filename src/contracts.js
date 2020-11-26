@@ -1,6 +1,3 @@
-const changeCase = require('change-case');
-const generate = require('@babel/generator').default;
-const template = require('@babel/template').default;
 const t = require('@babel/types');
 
 const create = {
@@ -81,6 +78,7 @@ function createContract(schema, required = true) {
   } else if (!required) {
     ast = t.memberExpression(ast, t.identifier('optional'));
   }
+
   return ast;
 }
 
@@ -91,4 +89,19 @@ function createNullContract() {
   );
 }
 
-module.exports = { createContract, createNullContract };
+function addComment(node, text) {
+  const lines = text.split('\n');
+  lines[0] = ` ${lines[0]}`;
+  lines[lines.length - 1] = `${lines[lines.length - 1]} `;
+  t.addComment(
+    node,
+    'leading',
+    lines
+      .map((line, index) =>
+        index > 0 && index < lines.length ? ` * ${line}` : line,
+      )
+      .join('\n'),
+  );
+}
+
+module.exports = { createContract, createNullContract, addComment };

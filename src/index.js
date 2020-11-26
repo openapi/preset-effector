@@ -3,7 +3,11 @@ const generate = require('@babel/generator').default;
 const template = require('@babel/template').default;
 const t = require('@babel/types');
 const { status } = require('./status');
-const { createContract, createNullContract } = require('./contracts');
+const {
+  createContract,
+  createNullContract,
+  addComment,
+} = require('./contracts');
 
 const exportConst = template(`export const %%name%% = %%value%%;`, {
   plugins: ['typescript'],
@@ -82,11 +86,15 @@ function createDoneContracts(name, responses) {
     const contract = responses[code].content
       ? createContract(responses[code].content['application/json'].schema)
       : createNullContract();
-    return t.exportNamedDeclaration(
+    const ast = t.exportNamedDeclaration(
       t.variableDeclaration('const', [
         t.variableDeclarator(t.identifier(contractName), contract),
       ]),
     );
+    if (responses[code].description) {
+      addComment(ast, responses[code].description);
+    }
+    return ast;
   });
   return contracts;
 }
@@ -119,11 +127,15 @@ function createFailContracts(name, responses) {
     const contract = responses[code].content
       ? createContract(responses[code].content['application/json'].schema)
       : createNullContract();
-    return t.exportNamedDeclaration(
+    const ast = t.exportNamedDeclaration(
       t.variableDeclaration('const', [
         t.variableDeclarator(t.identifier(contractName), contract),
       ]),
     );
+    if (responses[code].description) {
+      addComment(ast, responses[code].description);
+    }
+    return ast;
   });
   return contracts;
 }
@@ -237,7 +249,7 @@ function createEffect(
     name: t.identifier(constName),
     value: effectCall,
   });
-  t.addComment(expression, 'leading', description);
+  addComment(expression, description);
 
   return [...doneContracts, doneTypes, ...failContracts, failTypes, expression];
 }

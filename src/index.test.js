@@ -12,16 +12,21 @@ test('render', () => {
         {
           operationId: 'accessRecoverySendEmail',
           tags: ['Access Recovery'],
-          description: 'Send password recovery confirmation code to email',
+          description:
+            'Send password recovery confirmation code to email\nAdd another example description\nThis is just a demo',
           requestBody: {
             required: true,
             content: {
               'application/json': {
                 schema: {
+                  description:
+                    'Send password recovery confirmation code to email\nAdd another example description\nThis is just a demo',
                   type: 'object',
                   required: ['email'],
                   properties: {
                     email: {
+                      description:
+                        'Send password recovery confirmation code to email\nAdd another example description\nThis is just a demo',
                       type: 'string',
                       format: 'email',
                       example: 'user@gmail.com',
@@ -40,10 +45,14 @@ test('render', () => {
               content: {
                 'application/json': {
                   schema: {
+                    description:
+                      'Send password recovery confirmation code to email\nAdd another example description\nThis is just a demo',
                     type: 'object',
                     required: ['error'],
                     properties: {
                       error: {
+                        description:
+                          'Send password recovery confirmation code to email\nAdd another example description\nThis is just a demo',
                         type: 'string',
                         enum: ['invalid_email', 'invalid_password'],
                       },
@@ -57,10 +66,14 @@ test('render', () => {
               content: {
                 'application/json': {
                   schema: {
+                    description:
+                      'Send password recovery confirmation code to email\nAdd another example description\nThis is just a demo',
                     type: 'object',
                     required: ['error'],
                     properties: {
                       error: {
+                        description:
+                          'Send password recovery confirmation code to email\nAdd another example description\nThis is just a demo',
                         type: 'string',
                         enum: ['invalid_email', 'invalid_password'],
                       },
@@ -77,7 +90,10 @@ test('render', () => {
       ),
     ),
   ).toMatchInlineSnapshot(`
-    "export const registerConfirmationOk = typed.nul.optional;
+    "/* Password changed successfully */
+    export const registerConfirmationOk = typed.nul.optional;
+
+    /* Reset code or password is invalid */
     export const registerConfirmationAccepted = typed.object({
       error: typed.union(\\"invalid_email\\", \\"invalid_password\\")
     });
@@ -88,9 +104,13 @@ test('render', () => {
       status: \\"accepted\\";
       answer: typed.Get<typeof registerConfirmationAccepted>;
     };
+
+    /* Reset code or password is invalid */
     export const registerConfirmationBadRequest = typed.object({
       error: typed.union(\\"invalid_email\\", \\"invalid_password\\")
     });
+
+    /* Something goes wrong */
     export const registerConfirmationInternalServerError = typed.nul.optional;
     export type RegisterConfirmationFail = {
       status: \\"bad_request\\";
@@ -100,7 +120,9 @@ test('render', () => {
       error: typed.Get<typeof registerConfirmationInternalServerError>;
     } | GenericErrors;
 
-    /*Send password recovery confirmation code to email*/
+    /* Send password recovery confirmation code to email
+     * Add another example description
+     * This is just a demo */
     export const registerConfirmation = createEffect<RegisterConfirmation, RegisterConfirmationDone, RegisterConfirmationFail>({
       async handler() {
         const name = \\"registerConfirmation.body\\";
