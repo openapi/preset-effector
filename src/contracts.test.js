@@ -1,4 +1,4 @@
-const { createContract } = require('./contracts');
+const { createContract, createNullContract } = require('./contracts');
 const { renderAst } = require('./index');
 
 test('object with enum', () => {
@@ -140,4 +140,10 @@ test('oneOf', () => {
       bar: typed.array(typed.union(\\"first\\", \\"second\\", \\"third\\")).optional
     }))"
   `);
+});
+
+test('nullContract', () => {
+  expect(renderAst(createNullContract())).toMatchInlineSnapshot(
+    `"typed.nul.optional"`,
+  );
 });

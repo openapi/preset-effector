@@ -3,6 +3,7 @@ const generate = require('@babel/generator').default;
 const template = require('@babel/template').default;
 const t = require('@babel/types');
 const { status } = require('./status');
+const { createContract, createNullContract } = require('./contracts');
 
 const exportConst = template(`export const %%name%% = %%value%%;`, {
   plugins: ['typescript'],
@@ -72,22 +73,59 @@ function createTypeDoneVariant({ status, contractName }) {
   ]);
 }
 
-function createDone(name, responses) {
-  const variants = Object.keys(responses)
-    .filter((code) => code < 400)
-    .map((code) =>
-      createTypeDoneVariant({
-        status: changeCase.snakeCase(status[code].code),
-        contractName: `${name}${changeCase.pascalCase(status[code].code)}`,
-      }),
+function createDoneContracts(name, responses) {
+  const variants = Object.keys(responses).filter((code) => code < 400);
+
+  const contracts = variants.map((code) => {
+    const contractName =
+      changeCase.camelCase(name) + changeCase.pascalCase(status[code].code);
+    const contract = responses[code].content
+      ? createContract(responses[code].content['application/json'].schema)
+      : createNullContract();
+    return t.exportNamedDeclaration(
+      t.variableDeclaration('const', [
+        t.variableDeclarator(t.identifier(contractName), contract),
+      ]),
     );
+  });
+  return contracts;
+}
+
+function createDoneTypes(name, responses) {
+  const variants = Object.keys(responses).filter((code) => code < 400);
+
+  const types = variants.map((code) =>
+    createTypeDoneVariant({
+      status: changeCase.snakeCase(status[code].code),
+      contractName: `${name}${changeCase.pascalCase(status[code].code)}`,
+    }),
+  );
+
   return t.exportNamedDeclaration(
     t.tsTypeAliasDeclaration(
       t.identifier(`${changeCase.pascalCase(name)}Done`),
       null,
-      t.tsUnionType(variants),
+      t.tsUnionType(types),
     ),
   );
+}
+
+function createFailContracts(name, responses) {
+  const variants = Object.keys(responses).filter((code) => code >= 400);
+
+  const contracts = variants.map((code) => {
+    const contractName =
+      changeCase.camelCase(name) + changeCase.pascalCase(status[code].code);
+    const contract = responses[code].content
+      ? createContract(responses[code].content['application/json'].schema)
+      : createNullContract();
+    return t.exportNamedDeclaration(
+      t.variableDeclaration('const', [
+        t.variableDeclarator(t.identifier(contractName), contract),
+      ]),
+    );
+  });
+  return contracts;
 }
 
 function createTypeFailVariant({ status, contractName }) {
@@ -135,7 +173,9 @@ function createEffect(
   const constName = changeCase.camelCase(name);
   const TypeName = changeCase.pascalCase(name);
 
-  const doneTypes = createDone(name, responses);
+  const doneContracts = createDoneContracts(name, responses);
+  const failContracts = createFailContracts(name, responses);
+  const doneTypes = createDoneTypes(name, responses);
   const failTypes = createFail(name, responses);
 
   const cases = Object.keys(responses).map((_code) => {
@@ -199,7 +239,7 @@ function createEffect(
   });
   t.addComment(expression, 'leading', description);
 
-  return [doneTypes, failTypes, expression];
+  return [...doneContracts, doneTypes, ...failContracts, failTypes, expression];
 }
 
 function renderProgram(nodes) {

@@ -84,4 +84,11 @@ function createContract(schema, required = true) {
   return ast;
 }
 
-module.exports = { createContract };
+function createNullContract() {
+  return t.memberExpression(
+    t.memberExpression(t.identifier('typed'), t.identifier('nul')),
+    t.identifier('optional'),
+  );
+}
+
+module.exports = { createContract, createNullContract };

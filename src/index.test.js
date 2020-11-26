@@ -77,13 +77,21 @@ test('render', () => {
       ),
     ),
   ).toMatchInlineSnapshot(`
-    "export type RegisterConfirmationDone = {
+    "export const registerConfirmationOk = typed.nul.optional;
+    export const registerConfirmationAccepted = typed.object({
+      error: typed.union(\\"invalid_email\\", \\"invalid_password\\")
+    });
+    export type RegisterConfirmationDone = {
       status: \\"ok\\";
       answer: typed.Get<typeof registerConfirmationOk>;
     } | {
       status: \\"accepted\\";
       answer: typed.Get<typeof registerConfirmationAccepted>;
     };
+    export const registerConfirmationBadRequest = typed.object({
+      error: typed.union(\\"invalid_email\\", \\"invalid_password\\")
+    });
+    export const registerConfirmationInternalServerError = typed.nul.optional;
     export type RegisterConfirmationFail = {
       status: \\"bad_request\\";
       error: typed.Get<typeof registerConfirmationBadRequest>;
