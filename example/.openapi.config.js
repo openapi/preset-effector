@@ -1,6 +1,6 @@
 module.exports = {
   file:
-    'https://raw.githubusercontent.com/accesso-app/backend/master/api-public/openapi.yaml',
+    'https://raw.githubusercontent.com/accesso-app/backend/master/api-internal/openapi.yaml',
   presets: [
     [
       require.resolve('../'),
