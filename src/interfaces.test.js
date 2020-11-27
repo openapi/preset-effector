@@ -2,7 +2,6 @@ const { createInterface } = require('./interfaces');
 const { renderAst } = require('./index');
 
 test('object', () => {
-  // no-op
   expect(
     renderAst(
       createInterface({

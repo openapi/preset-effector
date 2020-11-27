@@ -1,5 +1,5 @@
-const { compileTemplate } = require('./lib/template');
-const { renderProgram, createEffect } = require('./src/index');
+const { compileTemplate } = require('./src/template');
+const { renderProgram, createEffect } = require('./src');
 
 const BEFORE = `
 // {{TITLE}} {{VERSION}}
