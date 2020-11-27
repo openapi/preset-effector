@@ -28,13 +28,13 @@ const create = {
     }
     return t.memberExpression(t.identifier('typed'), t.identifier('string'));
   },
-  number(schema) {
+  number(_schema) {
     return t.memberExpression(t.identifier('typed'), t.identifier('number'));
   },
   integer(schema) {
     return create.number(schema);
   },
-  boolean(schema) {
+  boolean(_schema) {
     return t.memberExpression(t.identifier('typed'), t.identifier('boolean'));
   },
   array(schema) {
@@ -69,7 +69,8 @@ function createContract(schema, required = true) {
 
   const creator = create[schema.type];
   if (!creator) {
-    throw new Error(`type "${schema.type}" is not supported`);
+    console.info(schema);
+    throw new Error(`type "${schema.type}" is not supported by contracts`);
   }
   let ast = creator(schema);
 
