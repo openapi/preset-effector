@@ -90,7 +90,14 @@ test('render', () => {
       ),
     ),
   ).toMatchInlineSnapshot(`
-    "/* Password changed successfully */
+    "type RegisterConfirmation = {
+      /* Send password recovery confirmation code to email
+       * Add another example description
+       * This is just a demo */
+      email: string;
+    };
+
+    /* Password changed successfully */
     export const registerConfirmationOk = typed.nul;
 
     /* Reset code or password is invalid */

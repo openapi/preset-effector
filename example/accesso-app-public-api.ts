@@ -35,7 +35,20 @@ function parseWith<T>(
   return parsed;
 }
 
-//#endregion prebuilt code//#region oauthToken
+//#endregion prebuilt code/* --- */
+//#region oauthToken
+interface OauthToken {
+  grant_type: 'authorization_code';
+
+  /* This parameter is for the authorization code received from the authorization server which will be in the query string parameter “code” in this request. */
+  code: string;
+
+  /* If the redirect URL was included in the initial authorization request,<br/> it must be included in the token request as well, and must be identical.<br/> Some services support registering multiple redirect URLs, and some require the redirect URL to be specified on each request.<br/> */
+  redirect_uri: string;
+  client_id: string;
+  client_secret: string;
+}
+
 /* The auth services validated the request and responds with an access token [OAuth2 Example Flow](https://www.oauth.com/oauth2-servers/server-side-apps/example-flow/) */
 export const oauthTokenCreated = typed.object({
   access_token: typed.string,

@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "prepublishOnly": "yarn test"
+    "prepublishOnly": "yarn test",
+    "example": "openapi --file https://raw.githubusercontent.com/accesso-app/backend/master/api-public/openapi.yaml --presets ./ --output-dir example && yarn prettier --write ./example"
   },
   "publishConfig": {
     "access": "public"

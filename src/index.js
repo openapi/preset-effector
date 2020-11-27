@@ -4,6 +4,7 @@ const template = require('@babel/template').default;
 const t = require('@babel/types');
 const { status } = require('./status');
 const { addComment } = require('./comments');
+const { createInterface } = require('./interfaces');
 const { createContract, createNullContract } = require('./contracts');
 
 const exportConst = template(`export const %%name%% = %%value%%;`, {
@@ -94,6 +95,19 @@ function createDoneContracts(name, responses) {
   return contracts;
 }
 
+function createParamsTypes(name, { requestBody }) {
+  let ast = t.tsVoidKeyword();
+  if (requestBody) {
+    ast = createInterface(requestBody.content['application/json'].schema);
+  }
+
+  return t.tsTypeAliasDeclaration(
+    t.identifier(changeCase.pascalCase(name)),
+    null,
+    ast,
+  );
+}
+
 function createDoneTypes(name, responses) {
   const variants = Object.keys(responses).filter((code) => code < 400);
 
@@ -180,6 +194,9 @@ function createEffect(
   const constName = changeCase.camelCase(name);
   const TypeName = changeCase.pascalCase(name);
 
+  // TODO: add query and header params
+  const paramsTypes = createParamsTypes(name, { requestBody });
+
   const doneContracts = createDoneContracts(name, responses);
   const failContracts = createFailContracts(name, responses);
   const doneTypes = createDoneTypes(name, responses);
@@ -246,7 +263,14 @@ function createEffect(
   });
   addComment(expression, description);
 
-  return [...doneContracts, doneTypes, ...failContracts, failTypes, expression];
+  return [
+    paramsTypes,
+    ...doneContracts,
+    doneTypes,
+    ...failContracts,
+    failTypes,
+    expression,
+  ];
 }
 
 function renderProgram(nodes) {

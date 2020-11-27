@@ -43,6 +43,7 @@ function parseWith<T>(
 `.trim();
 
 const METHOD = `
+/* --- */
 //#region {{METHOD_NAME}}
 {{METHOD_CONTENT}}
 //#endregion {{METHOD_NAME}}
