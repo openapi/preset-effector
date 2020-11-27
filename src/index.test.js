@@ -151,10 +151,16 @@ test('render', () => {
             };
 
           case 400:
-            throw createError(name, registerConfirmationBadRequest, \\"bad_request\\", answer.body);
+            throw {
+              status: \\"bad_request\\",
+              error: parseWith(name, registerConfirmationBadRequest, answer.body)
+            };
 
           case 500:
-            throw createError(name, registerConfirmationInternalServerError, \\"internal_server_error\\", answer.body);
+            throw {
+              status: \\"internal_server_error\\",
+              error: parseWith(name, registerConfirmationInternalServerError, answer.body)
+            };
 
           default:
             throw {

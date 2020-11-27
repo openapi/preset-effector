@@ -35,24 +35,13 @@ function parseWith<T>(
   return parsed;
 }
 
-function createError<T>(
-  name: string,
-  contract: typed.Contract<T>,
-  status: string,
-  value: unknown,
-) {
-  const error = parseWith(name, contract, value);
-  return { status, error };
-}
-
-interface AccessRecoverySendEmail {
-  email: string;
-}
 //#endregion prebuilt code//#region oauthToken
 /* The auth services validated the request and responds with an access token [OAuth2 Example Flow](https://www.oauth.com/oauth2-servers/server-side-apps/example-flow/) */
 export const oauthTokenCreated = typed.object({
   access_token: typed.string,
   token_type: typed.union('bearer'),
+
+  /* UTC Unix TimeStamp when the access token expires */
   expires_in: typed.number.optional,
 });
 export interface OauthTokenDone {
@@ -106,20 +95,16 @@ export const oauthToken = createEffect<
         };
 
       case 400:
-        throw createError(
-          name,
-          oauthTokenBadRequest,
-          'bad_request',
-          answer.body,
-        );
+        throw {
+          status: 'bad_request',
+          error: parseWith(name, oauthTokenBadRequest, answer.body),
+        };
 
       case 500:
-        throw createError(
-          name,
-          oauthTokenInternalServerError,
-          'internal_server_error',
-          answer.body,
-        );
+        throw {
+          status: 'internal_server_error',
+          error: parseWith(name, oauthTokenInternalServerError, answer.body),
+        };
 
       default:
         throw {

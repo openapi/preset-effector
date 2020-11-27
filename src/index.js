@@ -35,17 +35,15 @@ const switchStatus = template(`
 const caseStatus = template(`
   return {
     status: %%status%%,
-    answer: parseWith(name, %%contractName%%, answer.body)
+    answer: parseWith(name, %%contractName%%, answer.body),
   };
 `);
 
 const caseFail = template(`
-  throw createError(
-    name,
-    %%contractName%%,
-    %%status%%,
-    answer.body
-  );
+  throw {
+    status: %%status%%,
+    error: parseWith(name, %%contractName%%, answer.body),
+  };
 `);
 
 function contractGet({ contractName }) {

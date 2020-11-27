@@ -39,19 +39,6 @@ function parseWith<T>(
   return parsed;
 }
 
-function createError<T>(
-  name: string,
-  contract: typed.Contract<T>,
-  status: string,
-  value: unknown,
-) {
-  const error = parseWith(name, contract, value);
-  return { status, error };
-}
-
-interface AccessRecoverySendEmail {
-  email: string;
-}
 //#endregion prebuilt code
 `.trim();
 
