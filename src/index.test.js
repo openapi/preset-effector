@@ -95,6 +95,9 @@ test('render', () => {
 
     /* Reset code or password is invalid */
     export const registerConfirmationAccepted = typed.object({
+      /* Send password recovery confirmation code to email
+       * Add another example description
+       * This is just a demo */
       error: typed.union(\\"invalid_email\\", \\"invalid_password\\")
     });
     export type RegisterConfirmationDone = {
@@ -107,6 +110,9 @@ test('render', () => {
 
     /* Reset code or password is invalid */
     export const registerConfirmationBadRequest = typed.object({
+      /* Send password recovery confirmation code to email
+       * Add another example description
+       * This is just a demo */
       error: typed.union(\\"invalid_email\\", \\"invalid_password\\")
     });
 

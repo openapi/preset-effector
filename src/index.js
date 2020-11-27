@@ -3,11 +3,8 @@ const generate = require('@babel/generator').default;
 const template = require('@babel/template').default;
 const t = require('@babel/types');
 const { status } = require('./status');
-const {
-  createContract,
-  createNullContract,
-  addComment,
-} = require('./contracts');
+const { addComment } = require('./comments');
+const { createContract, createNullContract } = require('./contracts');
 
 const exportConst = template(`export const %%name%% = %%value%%;`, {
   plugins: ['typescript'],

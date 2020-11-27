@@ -1,4 +1,5 @@
 const t = require('@babel/types');
+const { addComment } = require('./comments');
 
 const create = {
   object(schema) {
@@ -6,15 +7,21 @@ const create = {
       t.memberExpression(t.identifier('typed'), t.identifier('object')),
       [
         t.objectExpression(
-          Object.keys(schema.properties).map((name) =>
-            t.objectProperty(
+          Object.keys(schema.properties).map((name) => {
+            const property = t.objectProperty(
               t.identifier(name),
               createContract(
                 schema.properties[name],
                 (schema.required || []).includes(name),
               ),
-            ),
-          ),
+            );
+
+            if (schema.properties[name].description) {
+              addComment(property, schema.properties[name].description);
+            }
+
+            return property;
+          }),
         ),
       ],
     );
@@ -84,26 +91,7 @@ function createContract(schema, required = true) {
 }
 
 function createNullContract() {
-  // return t.memberExpression(
-  //   t.memberExpression(t.identifier('typed'), t.identifier('nul')),
-  //   t.identifier('optional'),
-  // );
   return t.memberExpression(t.identifier('typed'), t.identifier('nul'));
 }
 
-function addComment(node, text) {
-  const lines = text.split('\n');
-  lines[0] = ` ${lines[0]}`;
-  lines[lines.length - 1] = `${lines[lines.length - 1]} `;
-  t.addComment(
-    node,
-    'leading',
-    lines
-      .map((line, index) =>
-        index > 0 && index < lines.length ? ` * ${line}` : line,
-      )
-      .join('\n'),
-  );
-}
-
-module.exports = { createContract, createNullContract, addComment };
+module.exports = { createContract, createNullContract };

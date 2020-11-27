@@ -56,12 +56,17 @@ test('nested objects', () => {
     ),
   ).toMatchInlineSnapshot(`
     "typed.object({
+      /* It is just one line */
       foo: typed.object({
         demo: typed.string,
         foo: typed.number.optional,
         bar: typed.boolean.optional
       }),
+
+      /* It is just one line */
       bar: typed.object({
+        /* It is just one line
+         * multiline description */
         demo: typed.string.maybe
       }).optional
     })"
@@ -92,6 +97,9 @@ test('array with unions', () => {
   ).toMatchInlineSnapshot(`
     "typed.object({
       foo: typed.boolean,
+
+      /* It is just one line
+       * multiline description */
       bar: typed.array(typed.union(\\"first\\", \\"second\\", \\"third\\")).optional
     })"
   `);
@@ -137,6 +145,9 @@ test('oneOf', () => {
       error: typed.union(\\"invalid_email\\", \\"invalid_password\\")
     }), typed.object({
       foo: typed.boolean,
+
+      /* It is just one line
+       * multiline description */
       bar: typed.array(typed.union(\\"first\\", \\"second\\", \\"third\\")).optional
     }))"
   `);
