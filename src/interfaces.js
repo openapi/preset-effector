@@ -1,4 +1,5 @@
 const t = require('@babel/types');
+const { addComment } = require('./comments');
 
 const create = {
   object(schema) {
@@ -14,6 +15,9 @@ const create = {
           ),
         );
         property.optional = (schema.required || []).includes(name) === false;
+        if (schema.properties[name].description) {
+          addComment(property, schema.properties[name].description);
+        }
         return property;
       }),
     );
@@ -41,12 +45,34 @@ const create = {
   },
 };
 
+function oneOf(variants) {
+  return t.tsUnionType(variants.map((variant) => createInterface(variant)));
+}
+
+function allOf(variants) {
+  return t.tsIntersectionType(
+    variants.map((variant) => createInterface(variant)),
+  );
+}
+
+function anyOf(variants) {
+  return t.tsIntersectionType(
+    variants.map((variant) =>
+      t.tsTypeReference(
+        t.identifier('Partial'),
+        t.tsTypeParameterInstantiation([createInterface(variant)]),
+      ),
+    ),
+  );
+}
+
 function createInterface(schema, required = true) {
-  // Add oneOf
-  // Add allOf
-  // Add anyOf
+  if (schema.oneOf) return oneOf(schema.oneOf);
+  if (schema.allOf) return allOf(schema.allOf);
+  if (schema.anyOf) return anyOf(schema.anyOf);
 
   const creator = create[schema.type];
+
   if (!creator) {
     console.info(schema);
     throw new Error(`type "${schema.type}" is not supported by interfaces`);

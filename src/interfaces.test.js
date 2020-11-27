@@ -57,14 +57,163 @@ test('nested objects', () => {
     ),
   ).toMatchInlineSnapshot(`
     "{
+      /* It is just one line */
       foo: {
         demo: string;
         foo?: number;
         bar?: boolean;
       };
+
+      /* It is just one line */
       bar?: {
+        /* It is just one line
+         * multiline description */
         demo: string | null;
       };
     }"
+  `);
+});
+
+test('oneOf', () => {
+  expect(
+    renderAst(
+      createInterface({
+        oneOf: [
+          {
+            type: 'object',
+            required: ['error'],
+            properties: {
+              error: {
+                type: 'string',
+                enum: ['invalid_email', 'invalid_password'],
+              },
+            },
+          },
+          {
+            type: 'object',
+            required: ['foo'],
+            properties: {
+              foo: {
+                type: 'boolean',
+              },
+              bar: {
+                type: 'array',
+                description: 'It is just one line \n multiline description',
+                items: {
+                  type: 'string',
+                  enum: ['first', 'second', 'third'],
+                },
+              },
+            },
+          },
+        ],
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "{
+      error: \\"invalid_email\\" | \\"invalid_password\\";
+    } | {
+      foo: boolean;
+
+      /* It is just one line
+       * multiline description */
+      bar?: (\\"first\\" | \\"second\\" | \\"third\\")[];
+    }"
+  `);
+});
+
+test('allOf', () => {
+  expect(
+    renderAst(
+      createInterface({
+        allOf: [
+          {
+            type: 'object',
+            required: ['error'],
+            properties: {
+              error: {
+                type: 'string',
+                enum: ['invalid_email', 'invalid_password'],
+              },
+            },
+          },
+          {
+            type: 'object',
+            required: ['foo'],
+            properties: {
+              foo: {
+                type: 'boolean',
+              },
+              bar: {
+                type: 'array',
+                description: 'It is just one line \n multiline description',
+                items: {
+                  type: 'string',
+                  enum: ['first', 'second', 'third'],
+                },
+              },
+            },
+          },
+        ],
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "{
+      error: \\"invalid_email\\" | \\"invalid_password\\";
+    } & {
+      foo: boolean;
+
+      /* It is just one line
+       * multiline description */
+      bar?: (\\"first\\" | \\"second\\" | \\"third\\")[];
+    }"
+  `);
+});
+
+test('anyOf', () => {
+  expect(
+    renderAst(
+      createInterface({
+        anyOf: [
+          {
+            type: 'object',
+            required: ['error'],
+            properties: {
+              error: {
+                type: 'string',
+                enum: ['invalid_email', 'invalid_password'],
+              },
+            },
+          },
+          {
+            type: 'object',
+            required: ['foo'],
+            properties: {
+              foo: {
+                type: 'boolean',
+              },
+              bar: {
+                type: 'array',
+                description: 'It is just one line \n multiline description',
+                items: {
+                  type: 'string',
+                  enum: ['first', 'second', 'third'],
+                },
+              },
+            },
+          },
+        ],
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "Partial<{
+      error: \\"invalid_email\\" | \\"invalid_password\\";
+    }> & Partial<{
+      foo: boolean;
+
+      /* It is just one line
+       * multiline description */
+      bar?: (\\"first\\" | \\"second\\" | \\"third\\")[];
+    }>"
   `);
 });
