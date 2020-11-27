@@ -19,6 +19,30 @@ module.exports = {
 };
 ```
 
+#### Options
+
+```js
+// openapi.config.js
+module.exports = {
+  file: 'path to local or remote swagger v2 or v3 spec',
+  outputDir: 'relative path to generated api directory',
+  presets: [
+    [
+      'effector-openapi-preset',
+      {
+        effectorImport: 'effector-root',
+        requestName: 'fetchFx',
+        requestPath: '../lib/fetch',
+      },
+    ],
+  ],
+};
+```
+
+- `effectorImport` (default `"effector"`) — what instance of the effector should be used
+- `requestName` (default `"requestFx"`) — change base effect for the each request
+- `requestPath` (default `"./request"`) — whether to import base request from
+
 #### Run generation
 
 ```shell

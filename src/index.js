@@ -14,7 +14,7 @@ const exportConst = template(`export const %%name%% = %%value%%;`, {
 const handlerFunction = template(
   `{
   const name = %%name%%;
-  const answer = await requestFx({
+  const answer = await %%requestFx%%({
     path: %%path%%,
     method: %%method%%,
   });
@@ -190,6 +190,7 @@ function createFail(name, responses) {
 function createEffect(
   { name, path, method },
   { description, requestBody, responses },
+  { requestName } = {},
 ) {
   const constName = changeCase.camelCase(name);
   const TypeName = changeCase.pascalCase(name);
@@ -233,6 +234,8 @@ function createEffect(
   const statuses = switchStatus();
   statuses.cases.unshift(...cases);
 
+  // TODO: add params for body
+
   const effectCall = t.callExpression(t.identifier('createEffect'), [
     t.objectExpression([
       t.objectMethod(
@@ -244,6 +247,7 @@ function createEffect(
           path: t.stringLiteral(path),
           method: t.stringLiteral(method.toUpperCase()),
           statuses,
+          requestFx: t.identifier(requestName),
         }),
         false,
         false,

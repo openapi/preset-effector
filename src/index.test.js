@@ -87,6 +87,9 @@ test('render', () => {
             },
           },
         },
+        {
+          requestName: 'requestFx',
+        },
       ),
     ),
   ).toMatchInlineSnapshot(`
