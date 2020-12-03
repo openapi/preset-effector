@@ -216,3 +216,70 @@ test('anyOf', () => {
     }>"
   `);
 });
+
+test('additionalProperties', () => {
+  expect(
+    renderAst(
+      createInterface({
+        type: 'object',
+        required: ['foo'],
+        additionalProperties: {
+          type: 'object',
+          additionalProperties: true,
+          properties: {
+            type: {
+              type: 'string',
+              enum: ['value', 'container'],
+            },
+          },
+        },
+        properties: {
+          foo: {
+            type: 'object',
+            description: 'It is just one line',
+            required: ['demo'],
+            properties: {
+              demo: { type: 'string' },
+              foo: { type: 'number' },
+              bar: { type: 'boolean' },
+            },
+          },
+          bar: {
+            type: 'object',
+            description: 'It is just one line',
+            required: ['demo'],
+            additionalProperties: true,
+            properties: {
+              demo: {
+                type: 'string',
+                description: 'It is just one line \n multiline description',
+                nullable: true,
+              },
+            },
+          },
+        },
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "{
+      /* It is just one line */
+      foo: {
+        demo: string;
+        foo?: number;
+        bar?: boolean;
+      };
+
+      /* It is just one line */
+      bar?: {
+        /* It is just one line
+         * multiline description */
+        demo: string | null;
+        [key: string]: unknown;
+      };
+      [key: string]: {
+        type?: \\"value\\" | \\"container\\";
+        [key: string]: unknown;
+      };
+    }"
+  `);
+});

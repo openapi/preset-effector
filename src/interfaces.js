@@ -3,24 +3,38 @@ const { addComment } = require('./comments');
 
 const create = {
   object(schema) {
-    return t.tsTypeLiteral(
-      Object.keys(schema.properties).map((name) => {
-        const property = t.tsPropertySignature(
-          t.identifier(name),
-          t.tsTypeAnnotation(
-            createInterface(
-              schema.properties[name],
-              (schema.required || []).includes(name),
-            ),
+    const properties = Object.keys(schema.properties).map((name) => {
+      const property = t.tsPropertySignature(
+        t.identifier(name),
+        t.tsTypeAnnotation(
+          createInterface(
+            schema.properties[name],
+            (schema.required || []).includes(name),
           ),
-        );
-        property.optional = (schema.required || []).includes(name) === false;
-        if (schema.properties[name].description) {
-          addComment(property, schema.properties[name].description);
-        }
-        return property;
-      }),
-    );
+        ),
+      );
+      property.optional = (schema.required || []).includes(name) === false;
+      if (schema.properties[name].description) {
+        addComment(property, schema.properties[name].description);
+      }
+      return property;
+    });
+
+    if (schema.additionalProperties) {
+      const index =
+        schema.additionalProperties === true
+          ? t.tsUnknownKeyword()
+          : createInterface(schema.additionalProperties);
+
+      const stringKey = t.identifier('key');
+      stringKey.typeAnnotation = t.tsTypeAnnotation(t.tsStringKeyword());
+
+      properties.push(
+        t.tsIndexSignature([stringKey], t.tsTypeAnnotation(index)),
+      );
+    }
+
+    return t.tsTypeLiteral(properties);
   },
   string(schema) {
     if (schema.enum) {

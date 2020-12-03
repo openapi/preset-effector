@@ -252,3 +252,65 @@ test('anyOf', () => {
 test('nullContract', () => {
   expect(renderAst(createNullContract())).toMatchInlineSnapshot(`"typed.nul"`);
 });
+
+test('additionalProperties', () => {
+  expect(
+    renderAst(
+      createContract({
+        type: 'object',
+        required: ['foo'],
+        additionalProperties: {
+          type: 'object',
+          additionalProperties: true,
+          properties: {
+            type: {
+              type: 'string',
+              enum: ['value', 'container'],
+            },
+          },
+        },
+        properties: {
+          foo: {
+            type: 'object',
+            description: 'It is just one line',
+            required: ['demo'],
+            properties: {
+              demo: { type: 'string' },
+              foo: { type: 'number' },
+              bar: { type: 'boolean' },
+            },
+          },
+          bar: {
+            type: 'object',
+            description: 'It is just one line',
+            required: ['demo'],
+            additionalProperties: true,
+            properties: {
+              demo: {
+                type: 'string',
+                description: 'It is just one line \n multiline description',
+                nullable: true,
+              },
+            },
+          },
+        },
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "typed.object({
+      /* It is just one line */
+      foo: typed.object({
+        demo: typed.string,
+        foo: typed.number.optional,
+        bar: typed.boolean.optional
+      }),
+
+      /* It is just one line */
+      bar: typed.object({
+        /* It is just one line
+         * multiline description */
+        demo: typed.string.maybe
+      }).optional
+    })"
+  `);
+});
