@@ -94,6 +94,15 @@ function createDoneContracts(name, responses) {
   return contracts;
 }
 
+const propertyNameMatch = /^\w+$/i;
+
+function createPropertyName(name) {
+  if (name.match(propertyNameMatch)) {
+    return t.identifier(name);
+  }
+  return t.stringLiteral(name);
+}
+
 function createParamsTypes(name, { requestBody, parameters }) {
   const members = [];
 
@@ -124,7 +133,7 @@ function createParamsTypes(name, { requestBody, parameters }) {
     const schema = t.tsTypeLiteral(
       children.map(({ name, required, schema, content, description }) => {
         const property = t.tsPropertySignature(
-          t.identifier(name),
+          createPropertyName(name),
           t.tsTypeAnnotation(
             createInterface(schema || content['application/json'].schema),
           ),

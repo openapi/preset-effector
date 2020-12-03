@@ -38,23 +38,25 @@ function parseWith<T>(
 //#endregion prebuilt code/* --- */
 //#region oauthAuthorizeRequest
 interface OauthAuthorizeRequest {
-  /* responseType is set to code indicating that you want an authorization code as the response. */
-  responseType: 'code';
+  body: {
+    /* responseType is set to code indicating that you want an authorization code as the response. */
+    responseType: 'code';
 
-  /* The clientId is the identifier for your app. You will have received a clientId when first registering your app with the service. */
-  clientId: string;
+    /* The clientId is the identifier for your app. You will have received a clientId when first registering your app with the service. */
+    clientId: string;
 
-  /* The redirectUri may be optional depending on the API, but is highly recommended.<br/>
-   * This is the URL to which you want the user to be redirected after the authorization is complete.<br/>
-   * This must match the redirect URL that you have previously registered with the service.<br/>
-   *  */
-  redirectUri: string;
+    /* The redirectUri may be optional depending on the API, but is highly recommended.<br/>
+     * This is the URL to which you want the user to be redirected after the authorization is complete.<br/>
+     * This must match the redirect URL that you have previously registered with the service.<br/>
+     *  */
+    redirectUri: string;
 
-  /* Include one or more scope values (space-separated) to request additional levels of access.<br/> */
-  scope?: string;
+    /* Include one or more scope values (space-separated) to request additional levels of access.<br/> */
+    scope?: string;
 
-  /* The state parameter serves two functions.<br/> When the user is redirected back to your app, whatever value you include as the state will also be included in the redirect.<br/> This gives your app a chance to persist data between the user being directed to the authorization server and back again, such as using the state parameter as a session key. This may be used to indicate what action in the app to perform after authorization is complete, for example, indicating which of your app’s pages to redirect to after authorization. This also serves as a CSRF protection mechanism.<br/> When the user is redirected back to your app, double check that the state value matches what you set it to originally. This will ensure an attacker can’t intercept the authorization flow. */
-  state?: string;
+    /* The state parameter serves two functions.<br/> When the user is redirected back to your app, whatever value you include as the state will also be included in the redirect.<br/> This gives your app a chance to persist data between the user being directed to the authorization server and back again, such as using the state parameter as a session key. This may be used to indicate what action in the app to perform after authorization is complete, for example, indicating which of your app’s pages to redirect to after authorization. This also serves as a CSRF protection mechanism.<br/> When the user is redirected back to your app, double check that the state value matches what you set it to originally. This will ensure an attacker can’t intercept the authorization flow. */
+    state?: string;
+  };
 }
 
 /* Authorization completed, now access token can be obtained. */
@@ -121,11 +123,12 @@ export const oauthAuthorizeRequest = createEffect<
   OauthAuthorizeRequestDone,
   OauthAuthorizeRequestFail
 >({
-  async handler() {
+  async handler({ body }) {
     const name = 'oauthAuthorizeRequest.body';
     const answer = await fetchFx({
       path: '/oauth/authorize',
       method: 'POST',
+      body,
     });
 
     switch (answer.status) {
@@ -167,7 +170,9 @@ export const oauthAuthorizeRequest = createEffect<
 /* --- */
 //#region accessRecoverySendEmail
 interface AccessRecoverySendEmail {
-  email: string;
+  body: {
+    email: string;
+  };
 }
 
 /* Password changed successfully */
@@ -201,11 +206,12 @@ export const accessRecoverySendEmail = createEffect<
   AccessRecoverySendEmailDone,
   AccessRecoverySendEmailFail
 >({
-  async handler() {
+  async handler({ body }) {
     const name = 'accessRecoverySendEmail.body';
     const answer = await fetchFx({
       path: '/access-recovery/send-email',
       method: 'POST',
+      body,
     });
 
     switch (answer.status) {
@@ -251,8 +257,10 @@ export const accessRecoverySendEmail = createEffect<
 /* --- */
 //#region accessRecoverySetPassword
 interface AccessRecoverySetPassword {
-  password: string;
-  code: string;
+  body: {
+    password: string;
+    code: string;
+  };
 }
 
 /* Confirmation code is sent to email */
@@ -288,11 +296,12 @@ export const accessRecoverySetPassword = createEffect<
   AccessRecoverySetPasswordDone,
   AccessRecoverySetPasswordFail
 >({
-  async handler() {
+  async handler({ body }) {
     const name = 'accessRecoverySetPassword.body';
     const answer = await fetchFx({
       path: '/access-recovery/set-password',
       method: 'POST',
+      body,
     });
 
     switch (answer.status) {
@@ -337,7 +346,11 @@ export const accessRecoverySetPassword = createEffect<
 
 /* --- */
 //#region viewerGet
-type ViewerGet = void;
+interface ViewerGet {
+  header: {
+    'X-Access-Token': string;
+  };
+}
 
 /* Get profile of the user */
 export const viewerGetOk = typed.object({
@@ -370,11 +383,12 @@ export type ViewerGetFail =
 
 /* Get info about viewer by access token */
 export const viewerGet = createEffect<ViewerGet, ViewerGetDone, ViewerGetFail>({
-  async handler() {
+  async handler({ header }) {
     const name = 'viewerGet.body';
     const answer = await fetchFx({
       path: '/viewer',
       method: 'GET',
+      header,
     });
 
     switch (answer.status) {
@@ -412,7 +426,9 @@ export const viewerGet = createEffect<ViewerGet, ViewerGetDone, ViewerGetFail>({
 /* --- */
 //#region registerRequest
 interface RegisterRequest {
-  email: string;
+  body: {
+    email: string;
+  };
 }
 
 /* Registration link sent to email, now user can find out when the link expires */
@@ -453,11 +469,12 @@ export const registerRequest = createEffect<
   RegisterRequestDone,
   RegisterRequestFail
 >({
-  async handler() {
+  async handler({ body }) {
     const name = 'registerRequest.body';
     const answer = await fetchFx({
       path: '/register/request',
       method: 'POST',
+      body,
     });
 
     switch (answer.status) {
@@ -499,10 +516,12 @@ export const registerRequest = createEffect<
 /* --- */
 //#region registerConfirmation
 interface RegisterConfirmation {
-  confirmationCode: string;
-  firstName: string;
-  lastName: string;
-  password: string;
+  body: {
+    confirmationCode: string;
+    firstName: string;
+    lastName: string;
+    password: string;
+  };
 }
 
 /* Okay, user created */
@@ -541,11 +560,12 @@ export const registerConfirmation = createEffect<
   RegisterConfirmationDone,
   RegisterConfirmationFail
 >({
-  async handler() {
+  async handler({ body }) {
     const name = 'registerConfirmation.body';
     const answer = await fetchFx({
       path: '/register/confirmation',
       method: 'POST',
+      body,
     });
 
     switch (answer.status) {
@@ -587,8 +607,10 @@ export const registerConfirmation = createEffect<
 /* --- */
 //#region sessionCreate
 interface SessionCreate {
-  email: string;
-  password: string;
+  body: {
+    email: string;
+    password: string;
+  };
 }
 
 /* Session created, token wrote to cookies */
@@ -625,11 +647,12 @@ export const sessionCreate = createEffect<
   SessionCreateDone,
   SessionCreateFail
 >({
-  async handler() {
+  async handler({ body }) {
     const name = 'sessionCreate.body';
     const answer = await fetchFx({
       path: '/session/create',
       method: 'POST',
+      body,
     });
 
     switch (answer.status) {
@@ -666,7 +689,7 @@ export const sessionCreate = createEffect<
 
 /* --- */
 //#region sessionGet
-type SessionGet = void;
+interface SessionGet {}
 
 /* Session exists */
 export const sessionGetOk = typed.object({
@@ -745,7 +768,9 @@ export const sessionGet = createEffect<
 /* --- */
 //#region sessionDelete
 interface SessionDelete {
-  deleteAllSessions: boolean;
+  body: {
+    deleteAllSessions: boolean;
+  };
 }
 
 /* session deleted */
@@ -786,11 +811,12 @@ export const sessionDelete = createEffect<
   SessionDeleteDone,
   SessionDeleteFail
 >({
-  async handler() {
+  async handler({ body }) {
     const name = 'sessionDelete.body';
     const answer = await fetchFx({
       path: '/session/delete',
       method: 'POST',
+      body,
     });
 
     switch (answer.status) {

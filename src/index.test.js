@@ -182,7 +182,7 @@ test('render', () => {
       };
       header: {
         /* Super authentication token */
-        X-Token: string;
+        \\"X-Token\\": string;
         Hello?: number;
       };
       cookie?: {
