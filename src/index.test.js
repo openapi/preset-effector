@@ -244,7 +244,6 @@ test('render', () => {
           path: \`/register/\${path.first}/confirmation/\${path.second}\`,
           method: \\"POST\\",
           body,
-          path,
           query,
           header,
           cookie

@@ -303,9 +303,12 @@ function createRequestParams(
       t.identifier('method'),
       t.stringLiteral(method.toUpperCase()),
     ),
-    ...Object.keys(destructuring).map((name) =>
-      t.objectProperty(t.identifier(name), t.identifier(name), false, true),
-    ),
+    // Path params used only in path literal
+    ...Object.keys(destructuring)
+      .filter((param) => param !== 'path')
+      .map((name) =>
+        t.objectProperty(t.identifier(name), t.identifier(name), false, true),
+      ),
   ]);
 }
 

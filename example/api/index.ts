@@ -45,16 +45,20 @@ interface OauthAuthorizeRequest {
     /* The clientId is the identifier for your app. You will have received a clientId when first registering your app with the service. */
     clientId: string;
 
-    /* The redirectUri may be optional depending on the API, but is highly recommended.<br/>
-     * This is the URL to which you want the user to be redirected after the authorization is complete.<br/>
-     * This must match the redirect URL that you have previously registered with the service.<br/>
-     *  */
+    /* The redirectUri may be optional depending on the API, but is highly recommended.
+     *
+     * This is the URL to which you want the user to be redirected after the authorization is complete.
+     *
+     * This must match the redirect URL that you have previously registered with the service. */
     redirectUri: string;
 
-    /* Include one or more scope values (space-separated) to request additional levels of access.<br/> */
+    /* Include one or more scope values (space-separated) to request additional levels of access. */
     scope?: string;
 
-    /* The state parameter serves two functions.<br/> When the user is redirected back to your app, whatever value you include as the state will also be included in the redirect.<br/> This gives your app a chance to persist data between the user being directed to the authorization server and back again, such as using the state parameter as a session key. This may be used to indicate what action in the app to perform after authorization is complete, for example, indicating which of your app’s pages to redirect to after authorization. This also serves as a CSRF protection mechanism.<br/> When the user is redirected back to your app, double check that the state value matches what you set it to originally. This will ensure an attacker can’t intercept the authorization flow. */
+    /* The state parameter serves two functions.
+     * When the user is redirected back to your app, whatever value you include as the state will also be included in the redirect.
+     * This gives your app a chance to persist data between the user being directed to the authorization server and back again, such as using the state parameter as a session key. This may be used to indicate what action in the app to perform after authorization is complete, for example, indicating which of your app’s pages to redirect to after authorization. This also serves as a CSRF protection mechanism.
+     * When the user is redirected back to your app, double check that the state value matches what you set it to originally. This will ensure an attacker can’t intercept the authorization flow. */
     state?: string;
   };
 }
@@ -75,17 +79,25 @@ export interface OauthAuthorizeRequestDone {
   answer: typed.Get<typeof oauthAuthorizeRequestOk>;
 }
 
-/* There are two different kinds of errors to handle. The first kind of error is when the developer did something wrong when creating the authorization request. The other kind of error is when the user rejects the request (clicks the “Deny” button). <br/> If there is something wrong with the syntax of the request, such as the redirect_uri or client_id is invalid, then it’s important not to redirect the user and instead you should show the error message directly. This is to avoid letting your authorization server be used as an open redirector. <br/> If the redirect_uri and client_id are both valid, but there is still some other problem, it’s okay to redirect the user back to the redirect URI with the error in the query string. */
+/* There are two different kinds of errors to handle. The first kind of error is when the developer did something wrong when creating the authorization request. The other kind of error is when the user rejects the request (clicks the “Deny” button).
+ * If there is something wrong with the syntax of the request, such as the redirect_uri or client_id is invalid, then it’s important not to redirect the user and instead you should show the error message directly. This is to avoid letting your authorization server be used as an open redirector.
+ * If the redirect_uri and client_id are both valid, but there is still some other problem, it’s okay to redirect the user back to the redirect URI with the error in the query string. */
 export const oauthAuthorizeRequestBadRequest = typed.object({
-  /* Possible errors: <br/>
-   * If the user denies the authorization request, the server will redirect the user back to the redirect URL with error=`access_denied` in the query string, and no code will be present. It is up to the app to decide what to display to the user at this point.<br/>
-   * `invalid_request` — The request is missing a required parameter, includes an invalid parameter value, or is otherwise malformed.<br/>
-   * `unsupported_response_type` — The authorization server does not support obtaining an authorization code using this method.<br/>
-   * `invalid_scope` — The requested scope is invalid, unknown, or malformed.<br/>
-   * `server_error` — The authorization server encountered an unexpected condition which prevented it from fulfilling the request.<br/>
-   * `temporarily_unavailable` — The authorization server is currently unable to handle the request due to a temporary overloading or maintenance of the server.<br/>
-   * [OAuth2 Possible Errors](https://www.oauth.com/oauth2-servers/server-side-apps/possible-errors/)
-   *  */
+  /* Possible errors:
+   *
+   * If the user denies the authorization request, the server will redirect the user back to the redirect URL with error=`access_denied` in the query string, and no code will be present. It is up to the app to decide what to display to the user at this point.
+   *
+   * `invalid_request` — The request is missing a required parameter, includes an invalid parameter value, or is otherwise malformed.
+   *
+   * `unsupported_response_type` — The authorization server does not support obtaining an authorization code using this method.
+   *
+   * `invalid_scope` — The requested scope is invalid, unknown, or malformed.
+   *
+   * `server_error` — The authorization server encountered an unexpected condition which prevented it from fulfilling the request.
+   *
+   * `temporarily_unavailable` — The authorization server is currently unable to handle the request due to a temporary overloading or maintenance of the server.
+   *
+   * [OAuth2 Possible Errors](https://www.oauth.com/oauth2-servers/server-side-apps/possible-errors/) */
   error: typed.union(
     'access_denied',
     'invalid_request',
