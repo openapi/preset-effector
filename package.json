@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "prepublishOnly": "yarn test",
-    "example": "openapi --config ./example/.openapi.config.js && yarn prettier --write ./example"
+    "example": "openapi --config ./example/.openapi.config.js && yarn prettier --write ./example && yarn eslint --fix ./example"
   },
   "publishConfig": {
     "access": "public"
