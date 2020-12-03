@@ -94,16 +94,58 @@ function createDoneContracts(name, responses) {
   return contracts;
 }
 
-function createParamsTypes(name, { requestBody }) {
-  let ast = t.tsVoidKeyword();
+function createParamsTypes(name, { requestBody, parameters }) {
+  const members = [];
+
   if (requestBody) {
-    ast = createInterface(requestBody.content['application/json'].schema);
+    const schema = requestBody.content['application/json'].schema;
+    const member = t.tsPropertySignature(
+      t.identifier('body'),
+      t.tsTypeAnnotation(createInterface(schema)),
+    );
+    member.optional = !requestBody.required;
+    members.push(member);
+  }
+
+  // If at least one parameter is required, property in params should be required
+  const dataTypes = {};
+  for (const parameter of parameters) {
+    if (!dataTypes[parameter.in])
+      dataTypes[parameter.in] = { required: false, children: [] };
+
+    const passedType = dataTypes[parameter.in];
+    passedType.required = passedType.required || parameter.required;
+    passedType.children.push(parameter);
+  }
+
+  // Convert list of parameters to property signature
+  for (const name in dataTypes) {
+    const { required, children } = dataTypes[name];
+    const schema = t.tsTypeLiteral(
+      children.map(({ name, required, schema, content, description }) => {
+        const property = t.tsPropertySignature(
+          t.identifier(name),
+          t.tsTypeAnnotation(
+            createInterface(schema || content['application/json'].schema),
+          ),
+        );
+        if (description) addComment(property, description);
+        property.optional = !required;
+        return property;
+      }),
+    );
+    const member = t.tsPropertySignature(
+      t.identifier(name),
+      t.tsTypeAnnotation(schema),
+    );
+    member.optional = !required;
+    members.push(member);
   }
 
   return t.tsTypeAliasDeclaration(
     t.identifier(changeCase.pascalCase(name)),
     null,
-    ast,
+    t.tsTypeLiteral(members),
   );
 }
 
@@ -266,8 +308,7 @@ function createEffect(
   const constName = changeCase.camelCase(name);
   const TypeName = changeCase.pascalCase(name);
 
-  // TODO: add query and header params
-  const paramsTypes = createParamsTypes(name, { requestBody });
+  const paramsTypes = createParamsTypes(name, { requestBody, parameters });
 
   const doneContracts = createDoneContracts(name, responses);
   const failContracts = createFailContracts(name, responses);

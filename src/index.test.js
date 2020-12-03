@@ -160,10 +160,36 @@ test('render', () => {
     ),
   ).toMatchInlineSnapshot(`
     "type RegisterConfirmation = {
-      /* Send password recovery confirmation code to email
-       * Add another example description
-       * This is just a demo */
-      email: string;
+      body: {
+        /* Send password recovery confirmation code to email
+         * Add another example description
+         * This is just a demo */
+        email: string;
+      };
+      path: {
+        /* Just a stub parameter */
+        first?: string;
+
+        /* This is a example */
+        second: number;
+      };
+      query: {
+        /* ID of the object to fetch */
+        id?: string;
+
+        /* Algebra to use */
+        math: \\"hk86\\" | \\"hk84\\" | \\"dt14\\";
+      };
+      header: {
+        /* Super authentication token */
+        X-Token: string;
+        Hello?: number;
+      };
+      cookie?: {
+        /* Theme of user interface */
+        theme?: \\"dark\\" | \\"light\\" | \\"auto\\";
+        lastUpdated?: number;
+      };
     };
 
     /* Password changed successfully */
