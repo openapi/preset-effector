@@ -2,10 +2,12 @@ const changeCase = require('change-case');
 const generate = require('@babel/generator').default;
 const template = require('@babel/template').default;
 const t = require('@babel/types');
+
 const { status } = require('./status');
 const { addComment } = require('./comments');
 const { createInterface } = require('./interfaces');
 const { createContract, createNullContract } = require('./contracts');
+const { stringPathToLiteral } = require('./path-literal');
 
 const exportConst = template(`export const %%name%% = %%value%%;`, {
   plugins: ['typescript'],
@@ -187,9 +189,34 @@ function createFail(name, responses) {
   );
 }
 
+function createPath({ path }, { parameters = [] }) {
+  const pathParameters = parameters.filter((param) => param.in === 'path');
+  const literal = stringPathToLiteral(path);
+  if (literal === null) return t.stringLiteral(path);
+
+  const availableParameters = pathParameters.map((element) => element.name);
+  literal.expressions.forEach((name) => {
+    if (!availableParameters.includes(name)) {
+      console.warn(
+        `Warning for "${path}": parameter "${name}" not found in parameters object\n` +
+          `Add { name: "${name}", in: "path" } to parameters object`,
+      );
+    }
+  });
+
+  return t.templateLiteral(
+    literal.quasis.map((raw, index) =>
+      t.templateElement({ raw }, index === literal.quasis.length - 1),
+    ),
+    literal.expressions.map((name) =>
+      t.memberExpression(t.identifier('path'), t.identifier(name)),
+    ),
+  );
+}
+
 function createEffect(
   { name, path, method },
-  { description, requestBody, responses },
+  { description, requestBody, responses, parameters = [] },
   { requestName } = {},
 ) {
   const constName = changeCase.camelCase(name);
@@ -244,7 +271,7 @@ function createEffect(
         [],
         handlerFunction({
           name: t.stringLiteral(`${constName}.body`),
-          path: t.stringLiteral(path),
+          path: createPath({ path }, { parameters }),
           method: t.stringLiteral(method.toUpperCase()),
           statuses,
           requestFx: t.identifier(requestName),

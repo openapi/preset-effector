@@ -6,7 +6,7 @@ test('render', () => {
       createEffect(
         {
           name: 'register-confirmation',
-          path: '/register/confirmation',
+          path: '/register/{first}/confirmation/{second}',
           method: 'post',
         },
         {
@@ -14,6 +14,72 @@ test('render', () => {
           tags: ['Access Recovery'],
           description:
             'Send password recovery confirmation code to email\nAdd another example description\nThis is just a demo',
+          parameters: [
+            {
+              name: 'first',
+              in: 'path',
+              description: 'Just a stub parameter',
+              // Should be overriden to `true` when `in: path`
+              required: false,
+              schema: { type: 'string' },
+            },
+            {
+              name: 'second',
+              in: 'path',
+              description: 'This is a example',
+              required: true,
+              schema: { type: 'integer', format: 'int64' },
+            },
+            {
+              name: 'id',
+              in: 'query',
+              description: 'ID of the object to fetch',
+              required: false,
+              schema: {
+                type: 'string',
+              },
+            },
+            {
+              name: 'math',
+              in: 'query',
+              description: 'Algebra to use',
+              required: true,
+              schema: {
+                type: 'string',
+                enum: ['hk86', 'hk84', 'dt14'],
+              },
+            },
+            {
+              name: 'X-Token',
+              in: 'header',
+              required: true,
+              description: 'Super authentication token',
+              schema: { type: 'string' },
+            },
+            {
+              name: 'Hello',
+              in: 'header',
+              required: false,
+              schema: {
+                type: 'integer',
+              },
+            },
+            {
+              name: 'theme',
+              in: 'cookie',
+              required: false,
+              description: 'Theme of user interface',
+              schema: { type: 'string', enum: ['dark', 'light', 'auto'] },
+            },
+            {
+              name: 'lastUpdated',
+              in: 'cookie',
+              required: false,
+              schema: {
+                type: 'integer',
+              },
+            },
+          ],
           requestBody: {
             required: true,
             content: {
@@ -143,7 +209,7 @@ test('render', () => {
       async handler() {
         const name = \\"registerConfirmation.body\\";
         const answer = await requestFx({
-          path: \\"/register/confirmation\\",
+          path: \`/register/\${path.first}/confirmation/\${path.second}\`,
           method: \\"POST\\"
         });
 

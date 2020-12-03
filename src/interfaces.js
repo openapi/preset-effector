@@ -66,7 +66,7 @@ function anyOf(variants) {
   );
 }
 
-function createInterface(schema, required = true) {
+function createInterface(schema, _required = true) {
   if (schema.oneOf) return oneOf(schema.oneOf);
   if (schema.allOf) return allOf(schema.allOf);
   if (schema.anyOf) return anyOf(schema.anyOf);
