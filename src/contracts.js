@@ -65,8 +65,10 @@ function anyOf(variants) {
 }
 
 function allOf(variants) {
-  console.warn('allOf is not supported');
-  return oneOf(variants);
+  return t.callExpression(
+    t.memberExpression(t.identifier('typed'), t.identifier('intersection')),
+    variants.map((schema) => createContract(schema)),
+  );
 }
 
 function createContract(schema, required = true) {

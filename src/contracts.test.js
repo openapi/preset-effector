@@ -153,6 +153,102 @@ test('oneOf', () => {
   `);
 });
 
+test('allOf', () => {
+  expect(
+    renderAst(
+      createContract({
+        allOf: [
+          {
+            type: 'object',
+            required: ['error'],
+            properties: {
+              error: {
+                type: 'string',
+                enum: ['invalid_email', 'invalid_password'],
+              },
+            },
+          },
+          {
+            type: 'object',
+            required: ['foo'],
+            properties: {
+              foo: {
+                type: 'boolean',
+              },
+              bar: {
+                type: 'array',
+                description: 'It is just one line \n multiline description',
+                items: {
+                  type: 'string',
+                  enum: ['first', 'second', 'third'],
+                },
+              },
+            },
+          },
+        ],
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "typed.intersection(typed.object({
+      error: typed.union(\\"invalid_email\\", \\"invalid_password\\")
+    }), typed.object({
+      foo: typed.boolean,
+
+      /* It is just one line
+       * multiline description */
+      bar: typed.array(typed.union(\\"first\\", \\"second\\", \\"third\\")).optional
+    }))"
+  `);
+});
+
+test('anyOf', () => {
+  expect(
+    renderAst(
+      createContract({
+        anyOf: [
+          {
+            type: 'object',
+            required: ['error'],
+            properties: {
+              error: {
+                type: 'string',
+                enum: ['invalid_email', 'invalid_password'],
+              },
+            },
+          },
+          {
+            type: 'object',
+            required: ['foo'],
+            properties: {
+              foo: {
+                type: 'boolean',
+              },
+              bar: {
+                type: 'array',
+                description: 'It is just one line \n multiline description',
+                items: {
+                  type: 'string',
+                  enum: ['first', 'second', 'third'],
+                },
+              },
+            },
+          },
+        ],
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "typed.union(typed.object({
+      error: typed.union(\\"invalid_email\\", \\"invalid_password\\")
+    }), typed.object({
+      foo: typed.boolean,
+
+      /* It is just one line
+       * multiline description */
+      bar: typed.array(typed.union(\\"first\\", \\"second\\", \\"third\\")).optional
+    }))"
+  `);
+});
+
 test('nullContract', () => {
   expect(renderAst(createNullContract())).toMatchInlineSnapshot(`"typed.nul"`);
 });
