@@ -16,10 +16,7 @@ const exportConst = template(`export const %%name%% = %%value%%;`, {
 const handlerFunction = template(
   `{
   const name = %%name%%;
-  const answer = await %%requestFx%%({
-    path: %%path%%,
-    method: %%method%%,
-  });
+  const answer = await %%requestFx%%(%%params%%);
   %%statuses%%
 }`,
   { allowAwaitOutsideFunction: true },
@@ -214,6 +211,53 @@ function createPath({ path }, { parameters = [] }) {
   );
 }
 
+function detectDestructuring({ parameters, requestBody }) {
+  const destructuring = {};
+
+  if (requestBody) destructuring.body = true;
+
+  for (const { in: place } of parameters) {
+    destructuring[place] = true;
+  }
+  return destructuring;
+}
+
+function createHandlerParams({ parameters = [], requestBody }) {
+  if (parameters.length === 0 && !requestBody) {
+    return [];
+  }
+  const destructuring = detectDestructuring({ parameters, requestBody });
+
+  return [
+    t.objectPattern(
+      Object.keys(destructuring).map((name) =>
+        t.objectProperty(t.identifier(name), t.identifier(name), false, true),
+      ),
+    ),
+  ];
+}
+
+function createRequestParams(
+  { method, path },
+  { parameters = [], requestBody },
+) {
+  const destructuring = detectDestructuring({ parameters, requestBody });
+
+  return t.objectExpression([
+    t.objectProperty(
+      t.identifier('path'),
+      createPath({ path }, { parameters }),
+    ),
+    t.objectProperty(
+      t.identifier('method'),
+      t.stringLiteral(method.toUpperCase()),
+    ),
+    ...Object.keys(destructuring).map((name) =>
+      t.objectProperty(t.identifier(name), t.identifier(name), false, true),
+    ),
+  ]);
+}
+
 function createEffect(
   { name, path, method },
   { description, requestBody, responses, parameters = [] },
@@ -268,11 +312,13 @@ function createEffect(
       t.objectMethod(
         'method',
         t.identifier('handler'),
-        [],
+        createHandlerParams({ parameters, requestBody }),
         handlerFunction({
           name: t.stringLiteral(`${constName}.body`),
-          path: createPath({ path }, { parameters }),
-          method: t.stringLiteral(method.toUpperCase()),
+          params: createRequestParams(
+            { path, method },
+            { parameters, requestBody },
+          ),
           statuses,
           requestFx: t.identifier(requestName),
         }),

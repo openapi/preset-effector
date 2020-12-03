@@ -206,11 +206,22 @@ test('render', () => {
      * Add another example description
      * This is just a demo */
     export const registerConfirmation = createEffect<RegisterConfirmation, RegisterConfirmationDone, RegisterConfirmationFail>({
-      async handler() {
+      async handler({
+        body,
+        path,
+        query,
+        header,
+        cookie
+      }) {
         const name = \\"registerConfirmation.body\\";
         const answer = await requestFx({
           path: \`/register/\${path.first}/confirmation/\${path.second}\`,
-          method: \\"POST\\"
+          method: \\"POST\\",
+          body,
+          path,
+          query,
+          header,
+          cookie
         });
 
         switch (answer.status) {
