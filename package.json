@@ -14,15 +14,15 @@
   "files": ["index.js", "lib", "!*.test.js"],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/openapijs/effector-preset.git"
+    "url": "git+https://github.com/openapi/effector-preset.git"
   },
   "keywords": ["swagger", "js", "openapi", "preset"],
   "author": "Sergey Sova <mail@sergeysova.com> (https://sova.dev/)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/openapijs/effector-preset/issues"
+    "url": "https://github.com/openapi/effector-preset/issues"
   },
-  "homepage": "https://github.com/openapijs/effector-preset#readme",
+  "homepage": "https://github.com/openapi/effector-preset#readme",
   "devDependencies": {
     "@eslint-kit/eslint-config-base": "^2.1.2",
     "@eslint-kit/eslint-config-node": "^2.0.0",
