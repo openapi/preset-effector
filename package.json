@@ -11,7 +11,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "files": ["index.js", "lib", "!*.test.js"],
+  "files": ["index.js", "lib", "src", "!*.test.js"],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/openapi/effector-preset.git"
