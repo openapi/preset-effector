@@ -27,16 +27,42 @@ export type GenericErrors =
       error: typed.ValidationError;
     };
 
-function parseWith<T>(
-  name: string,
-  contract: typed.Contract<T>,
-  value: unknown,
-): T {
-  const parsed = contract(name, value);
-  if (parsed instanceof typed.ValidationError) {
-    throw { status: 'validation_error', error: parsed };
+type ErrorCodes = 400 | 401 | 402 | 403 | 404 | 405 | 406 | 500 | 501 | 502 | 503 | 503 | 505;
+/**
+ * @throws
+ */
+function parseByStatus<
+  Variants extends string,
+  Contracts extends Record<number, [Variants, typed.Contract<any>]>,
+  Result extends {
+    [Code in keyof Contracts]: Contracts[Code] extends [infer Status, typed.Contract<infer T>]
+      ? { status: Status; answer: T }
+      : never;
   }
-  return parsed;
+>(
+  name: string,
+  response: { status: number; body?: unknown },
+  contracts: Contracts,
+): Result[Exclude<keyof Result, ErrorCodes>] {
+  const contractObject = contracts[response.status];
+  if (!contractObject) {
+    throw {
+      status: 'unknown_status',
+      error: {
+        status: response.status,
+        body: response.body,
+      },
+    };
+  }
+  const [status, contract] = contractObject;
+  const answer = contract(name, response.body);
+  if (answer instanceof typed.ValidationError) {
+    throw { status: 'validation_error', error: answer };
+  }
+  if (response.status >= 400) {
+    throw { status, error: answer };
+  }
+  return { status, answer } as Result[Exclude<keyof Result, ErrorCodes>];
 }
 
 //#endregion prebuilt code

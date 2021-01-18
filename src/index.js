@@ -13,38 +13,14 @@ const exportConst = template(`export const %%name%% = %%value%%;`, {
   plugins: ['typescript'],
 });
 
-const handlerFunction = template(
+const handlerFunctionBody = template(
   `{
   const name = %%name%%;
-  const answer = await %%requestFx%%(%%params%%);
-  %%statuses%%
+  const response = await %%requestFx%%(%%params%%);
+  return %%statusParser%%;
 }`,
   { allowAwaitOutsideFunction: true },
 );
-
-const switchStatus = template(`
-  switch (answer.status) {
-    default:
-      throw {
-        status: 'unknown_status',
-        error: { status: answer.status, body: answer.body },
-      };
-  }
-`);
-
-const caseStatus = template(`
-  return {
-    status: %%status%%,
-    answer: parseWith(name, %%contractName%%, answer.body),
-  };
-`);
-
-const caseFail = template(`
-  throw {
-    status: %%status%%,
-    error: parseWith(name, %%contractName%%, answer.body),
-  };
-`);
 
 function contractGet({ contractName }) {
   return t.tsTypeReference(
@@ -334,29 +310,20 @@ function createEffect(
       status[code].label,
     )}`;
 
-    function wrap(content) {
-      return t.switchCase(t.numericLiteral(code), [content]);
-    }
-
-    if (code >= 400) {
-      return wrap(
-        caseFail({
-          contractName: t.identifier(contractName),
-          status: t.stringLiteral(statusName),
-        }),
-      );
-    }
-
-    return wrap(
-      caseStatus({
-        status: t.stringLiteral(statusName),
-        contractName: t.identifier(contractName),
-      }),
+    return t.objectProperty(
+      t.numericLiteral(code),
+      t.arrayExpression([
+        t.stringLiteral(statusName),
+        t.identifier(contractName),
+      ]),
     );
   });
 
-  const statuses = switchStatus();
-  statuses.cases.unshift(...cases);
+  const statusParser = t.callExpression(t.identifier('parseByStatus'), [
+    t.identifier('name'),
+    t.identifier('response'),
+    t.objectExpression(cases),
+  ]);
 
   // TODO: add params for body
 
@@ -366,13 +333,13 @@ function createEffect(
         'method',
         t.identifier('handler'),
         createHandlerParams({ parameters, requestBody }),
-        handlerFunction({
+        handlerFunctionBody({
           name: t.stringLiteral(`${constName}.body`),
           params: createRequestParams(
             { path, method },
             { parameters, requestBody },
           ),
-          statuses,
+          statusParser,
           requestFx: t.identifier(requestName),
         }),
         false,
@@ -391,7 +358,9 @@ function createEffect(
     name: t.identifier(constName),
     value: effectCall,
   });
-  addComment(expression, description);
+  if (description) {
+    addComment(expression, description);
+  }
 
   return [
     paramsTypes,

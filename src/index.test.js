@@ -240,7 +240,7 @@ test('render', () => {
         cookie
       }) {
         const name = \\"registerConfirmation.body\\";
-        const answer = await requestFx({
+        const response = await requestFx({
           path: \`/register/\${path.first}/confirmation/\${path.second}\`,
           method: \\"POST\\",
           body,
@@ -248,41 +248,12 @@ test('render', () => {
           header,
           cookie
         });
-
-        switch (answer.status) {
-          case 200:
-            return {
-              status: \\"ok\\",
-              answer: parseWith(name, registerConfirmationOk, answer.body)
-            };
-
-          case 202:
-            return {
-              status: \\"accepted\\",
-              answer: parseWith(name, registerConfirmationAccepted, answer.body)
-            };
-
-          case 400:
-            throw {
-              status: \\"bad_request\\",
-              error: parseWith(name, registerConfirmationBadRequest, answer.body)
-            };
-
-          case 500:
-            throw {
-              status: \\"internal_server_error\\",
-              error: parseWith(name, registerConfirmationInternalServerError, answer.body)
-            };
-
-          default:
-            throw {
-              status: 'unknown_status',
-              error: {
-                status: answer.status,
-                body: answer.body
-              }
-            };
-        }
+        return parseByStatus(name, response, {
+          200: [\\"ok\\", registerConfirmationOk],
+          202: [\\"accepted\\", registerConfirmationAccepted],
+          400: [\\"bad_request\\", registerConfirmationBadRequest],
+          500: [\\"internal_server_error\\", registerConfirmationInternalServerError]
+        });
       }
 
     });"
