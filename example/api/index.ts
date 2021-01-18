@@ -23,16 +23,58 @@ export type GenericErrors =
       error: typed.ValidationError;
     };
 
-function parseWith<T>(
-  name: string,
-  contract: typed.Contract<T>,
-  value: unknown,
-): T {
-  const parsed = contract(name, value);
-  if (parsed instanceof typed.ValidationError) {
-    throw { status: 'validation_error', error: parsed };
+type ErrorCodes =
+  | 400
+  | 401
+  | 402
+  | 403
+  | 404
+  | 405
+  | 406
+  | 500
+  | 501
+  | 502
+  | 503
+  | 503
+  | 505;
+/**
+ * @throws
+ */
+function parseByStatus<
+  Variants extends string,
+  Contracts extends Record<number, [Variants, typed.Contract<any>]>,
+  Result extends {
+    [Code in keyof Contracts]: Contracts[Code] extends [
+      infer Status,
+      typed.Contract<infer T>,
+    ]
+      ? { status: Status; answer: T }
+      : never;
   }
-  return parsed;
+>(
+  name: string,
+  response: { status: number; body?: unknown },
+  contracts: Contracts,
+): Result[Exclude<keyof Result, ErrorCodes>] {
+  const contractObject = contracts[response.status];
+  if (!contractObject) {
+    throw {
+      status: 'unknown_status',
+      error: {
+        status: response.status,
+        body: response.body,
+      },
+    };
+  }
+  const [status, contract] = contractObject;
+  const answer = contract(name, response.body);
+  if (answer instanceof typed.ValidationError) {
+    throw { status: 'validation_error', error: answer };
+  }
+  if (response.status >= 400) {
+    throw { status, error: answer };
+  }
+  return { status, answer } as Result[Exclude<keyof Result, ErrorCodes>];
 }
 
 //#endregion prebuilt code/* --- */
@@ -137,44 +179,16 @@ export const oauthAuthorizeRequest = createEffect<
 >({
   async handler({ body }) {
     const name = 'oauthAuthorizeRequest.body';
-    const answer = await fetchFx({
+    const response = await fetchFx({
       path: '/oauth/authorize',
       method: 'POST',
       body,
     });
-
-    switch (answer.status) {
-      case 200:
-        return {
-          status: 'ok',
-          answer: parseWith(name, oauthAuthorizeRequestOk, answer.body),
-        };
-
-      case 400:
-        throw {
-          status: 'bad_request',
-          error: parseWith(name, oauthAuthorizeRequestBadRequest, answer.body),
-        };
-
-      case 500:
-        throw {
-          status: 'internal_server_error',
-          error: parseWith(
-            name,
-            oauthAuthorizeRequestInternalServerError,
-            answer.body,
-          ),
-        };
-
-      default:
-        throw {
-          status: 'unknown_status',
-          error: {
-            status: answer.status,
-            body: answer.body,
-          },
-        };
-    }
+    return parseByStatus(name, response, {
+      200: ['ok', oauthAuthorizeRequestOk],
+      400: ['bad_request', oauthAuthorizeRequestBadRequest],
+      500: ['internal_server_error', oauthAuthorizeRequestInternalServerError],
+    });
   },
 });
 //#endregion oauthAuthorizeRequest
@@ -220,48 +234,19 @@ export const accessRecoverySendEmail = createEffect<
 >({
   async handler({ body }) {
     const name = 'accessRecoverySendEmail.body';
-    const answer = await fetchFx({
+    const response = await fetchFx({
       path: '/access-recovery/send-email',
       method: 'POST',
       body,
     });
-
-    switch (answer.status) {
-      case 200:
-        return {
-          status: 'ok',
-          answer: parseWith(name, accessRecoverySendEmailOk, answer.body),
-        };
-
-      case 400:
-        throw {
-          status: 'bad_request',
-          error: parseWith(
-            name,
-            accessRecoverySendEmailBadRequest,
-            answer.body,
-          ),
-        };
-
-      case 500:
-        throw {
-          status: 'internal_server_error',
-          error: parseWith(
-            name,
-            accessRecoverySendEmailInternalServerError,
-            answer.body,
-          ),
-        };
-
-      default:
-        throw {
-          status: 'unknown_status',
-          error: {
-            status: answer.status,
-            body: answer.body,
-          },
-        };
-    }
+    return parseByStatus(name, response, {
+      200: ['ok', accessRecoverySendEmailOk],
+      400: ['bad_request', accessRecoverySendEmailBadRequest],
+      500: [
+        'internal_server_error',
+        accessRecoverySendEmailInternalServerError,
+      ],
+    });
   },
 });
 //#endregion accessRecoverySendEmail
@@ -310,130 +295,22 @@ export const accessRecoverySetPassword = createEffect<
 >({
   async handler({ body }) {
     const name = 'accessRecoverySetPassword.body';
-    const answer = await fetchFx({
+    const response = await fetchFx({
       path: '/access-recovery/set-password',
       method: 'POST',
       body,
     });
-
-    switch (answer.status) {
-      case 200:
-        return {
-          status: 'ok',
-          answer: parseWith(name, accessRecoverySetPasswordOk, answer.body),
-        };
-
-      case 400:
-        throw {
-          status: 'bad_request',
-          error: parseWith(
-            name,
-            accessRecoverySetPasswordBadRequest,
-            answer.body,
-          ),
-        };
-
-      case 500:
-        throw {
-          status: 'internal_server_error',
-          error: parseWith(
-            name,
-            accessRecoverySetPasswordInternalServerError,
-            answer.body,
-          ),
-        };
-
-      default:
-        throw {
-          status: 'unknown_status',
-          error: {
-            status: answer.status,
-            body: answer.body,
-          },
-        };
-    }
+    return parseByStatus(name, response, {
+      200: ['ok', accessRecoverySetPasswordOk],
+      400: ['bad_request', accessRecoverySetPasswordBadRequest],
+      500: [
+        'internal_server_error',
+        accessRecoverySetPasswordInternalServerError,
+      ],
+    });
   },
 });
 //#endregion accessRecoverySetPassword
-
-/* --- */
-//#region viewerGet
-interface ViewerGet {
-  header: {
-    'X-Access-Token': string;
-  };
-}
-
-/* Get profile of the user */
-export const viewerGetOk = typed.object({
-  firstName: typed.string,
-  lastName: typed.string,
-  id: typed.string,
-});
-export interface ViewerGetDone {
-  status: 'ok';
-  answer: typed.Get<typeof viewerGetOk>;
-}
-
-/* Failed to get profile of the user */
-export const viewerGetBadRequest = typed.object({
-  error: typed.union('invalid_token', 'unauthorized'),
-});
-
-/* Something goes wrong */
-export const viewerGetInternalServerError = typed.nul;
-export type ViewerGetFail =
-  | {
-      status: 'bad_request';
-      error: typed.Get<typeof viewerGetBadRequest>;
-    }
-  | {
-      status: 'internal_server_error';
-      error: typed.Get<typeof viewerGetInternalServerError>;
-    }
-  | GenericErrors;
-
-/* Get info about viewer by access token */
-export const viewerGet = createEffect<ViewerGet, ViewerGetDone, ViewerGetFail>({
-  async handler({ header }) {
-    const name = 'viewerGet.body';
-    const answer = await fetchFx({
-      path: '/viewer',
-      method: 'GET',
-      header,
-    });
-
-    switch (answer.status) {
-      case 200:
-        return {
-          status: 'ok',
-          answer: parseWith(name, viewerGetOk, answer.body),
-        };
-
-      case 400:
-        throw {
-          status: 'bad_request',
-          error: parseWith(name, viewerGetBadRequest, answer.body),
-        };
-
-      case 500:
-        throw {
-          status: 'internal_server_error',
-          error: parseWith(name, viewerGetInternalServerError, answer.body),
-        };
-
-      default:
-        throw {
-          status: 'unknown_status',
-          error: {
-            status: answer.status,
-            body: answer.body,
-          },
-        };
-    }
-  },
-});
-//#endregion viewerGet
 
 /* --- */
 //#region registerRequest
@@ -483,44 +360,16 @@ export const registerRequest = createEffect<
 >({
   async handler({ body }) {
     const name = 'registerRequest.body';
-    const answer = await fetchFx({
+    const response = await fetchFx({
       path: '/register/request',
       method: 'POST',
       body,
     });
-
-    switch (answer.status) {
-      case 201:
-        return {
-          status: 'created',
-          answer: parseWith(name, registerRequestCreated, answer.body),
-        };
-
-      case 400:
-        throw {
-          status: 'bad_request',
-          error: parseWith(name, registerRequestBadRequest, answer.body),
-        };
-
-      case 500:
-        throw {
-          status: 'internal_server_error',
-          error: parseWith(
-            name,
-            registerRequestInternalServerError,
-            answer.body,
-          ),
-        };
-
-      default:
-        throw {
-          status: 'unknown_status',
-          error: {
-            status: answer.status,
-            body: answer.body,
-          },
-        };
-    }
+    return parseByStatus(name, response, {
+      201: ['created', registerRequestCreated],
+      400: ['bad_request', registerRequestBadRequest],
+      500: ['internal_server_error', registerRequestInternalServerError],
+    });
   },
 });
 //#endregion registerRequest
@@ -574,44 +423,16 @@ export const registerConfirmation = createEffect<
 >({
   async handler({ body }) {
     const name = 'registerConfirmation.body';
-    const answer = await fetchFx({
+    const response = await fetchFx({
       path: '/register/confirmation',
       method: 'POST',
       body,
     });
-
-    switch (answer.status) {
-      case 201:
-        return {
-          status: 'created',
-          answer: parseWith(name, registerConfirmationCreated, answer.body),
-        };
-
-      case 400:
-        throw {
-          status: 'bad_request',
-          error: parseWith(name, registerConfirmationBadRequest, answer.body),
-        };
-
-      case 500:
-        throw {
-          status: 'internal_server_error',
-          error: parseWith(
-            name,
-            registerConfirmationInternalServerError,
-            answer.body,
-          ),
-        };
-
-      default:
-        throw {
-          status: 'unknown_status',
-          error: {
-            status: answer.status,
-            body: answer.body,
-          },
-        };
-    }
+    return parseByStatus(name, response, {
+      201: ['created', registerConfirmationCreated],
+      400: ['bad_request', registerConfirmationBadRequest],
+      500: ['internal_server_error', registerConfirmationInternalServerError],
+    });
   },
 });
 //#endregion registerConfirmation
@@ -661,40 +482,16 @@ export const sessionCreate = createEffect<
 >({
   async handler({ body }) {
     const name = 'sessionCreate.body';
-    const answer = await fetchFx({
+    const response = await fetchFx({
       path: '/session/create',
       method: 'POST',
       body,
     });
-
-    switch (answer.status) {
-      case 201:
-        return {
-          status: 'created',
-          answer: parseWith(name, sessionCreateCreated, answer.body),
-        };
-
-      case 400:
-        throw {
-          status: 'bad_request',
-          error: parseWith(name, sessionCreateBadRequest, answer.body),
-        };
-
-      case 500:
-        throw {
-          status: 'internal_server_error',
-          error: parseWith(name, sessionCreateInternalServerError, answer.body),
-        };
-
-      default:
-        throw {
-          status: 'unknown_status',
-          error: {
-            status: answer.status,
-            body: answer.body,
-          },
-        };
-    }
+    return parseByStatus(name, response, {
+      201: ['created', sessionCreateCreated],
+      400: ['bad_request', sessionCreateBadRequest],
+      500: ['internal_server_error', sessionCreateInternalServerError],
+    });
   },
 });
 //#endregion sessionCreate
@@ -740,39 +537,15 @@ export const sessionGet = createEffect<
 >({
   async handler() {
     const name = 'sessionGet.body';
-    const answer = await fetchFx({
+    const response = await fetchFx({
       path: '/session/get',
       method: 'POST',
     });
-
-    switch (answer.status) {
-      case 200:
-        return {
-          status: 'ok',
-          answer: parseWith(name, sessionGetOk, answer.body),
-        };
-
-      case 401:
-        throw {
-          status: 'unauthorized',
-          error: parseWith(name, sessionGetUnauthorized, answer.body),
-        };
-
-      case 500:
-        throw {
-          status: 'internal_server_error',
-          error: parseWith(name, sessionGetInternalServerError, answer.body),
-        };
-
-      default:
-        throw {
-          status: 'unknown_status',
-          error: {
-            status: answer.status,
-            body: answer.body,
-          },
-        };
-    }
+    return parseByStatus(name, response, {
+      200: ['ok', sessionGetOk],
+      401: ['unauthorized', sessionGetUnauthorized],
+      500: ['internal_server_error', sessionGetInternalServerError],
+    });
   },
 });
 //#endregion sessionGet
@@ -825,46 +598,17 @@ export const sessionDelete = createEffect<
 >({
   async handler({ body }) {
     const name = 'sessionDelete.body';
-    const answer = await fetchFx({
+    const response = await fetchFx({
       path: '/session/delete',
       method: 'POST',
       body,
     });
-
-    switch (answer.status) {
-      case 200:
-        return {
-          status: 'ok',
-          answer: parseWith(name, sessionDeleteOk, answer.body),
-        };
-
-      case 400:
-        throw {
-          status: 'bad_request',
-          error: parseWith(name, sessionDeleteBadRequest, answer.body),
-        };
-
-      case 401:
-        throw {
-          status: 'unauthorized',
-          error: parseWith(name, sessionDeleteUnauthorized, answer.body),
-        };
-
-      case 500:
-        throw {
-          status: 'internal_server_error',
-          error: parseWith(name, sessionDeleteInternalServerError, answer.body),
-        };
-
-      default:
-        throw {
-          status: 'unknown_status',
-          error: {
-            status: answer.status,
-            body: answer.body,
-          },
-        };
-    }
+    return parseByStatus(name, response, {
+      200: ['ok', sessionDeleteOk],
+      400: ['bad_request', sessionDeleteBadRequest],
+      401: ['unauthorized', sessionDeleteUnauthorized],
+      500: ['internal_server_error', sessionDeleteInternalServerError],
+    });
   },
 });
 //#endregion sessionDelete
