@@ -129,6 +129,85 @@ export const oauthToken = createEffect<OauthToken, OauthTokenDone, OauthTokenFai
 });
 //#endregion oauthToken
 
+/* --- */
+//#region viewerGet
+type ViewerGet = {
+  header: {
+    \\"X-Access-Token\\": string;
+  };
+};
+
+/* Get profile of the user */
+export const viewerGetOk = typed.object({
+  firstName: typed.string,
+  lastName: typed.string,
+  id: typed.string
+});
+export type ViewerGetDone = {
+  status: \\"ok\\";
+  answer: typed.Get<typeof viewerGetOk>;
+};
+
+/* Failed to get profile of the user */
+export const viewerGetBadRequest = typed.object({
+  error: typed.union(\\"invalid_token\\", \\"unauthorized\\")
+});
+
+/* Something goes wrong */
+export const viewerGetInternalServerError = typed.nul;
+export type ViewerGetFail = {
+  status: \\"bad_request\\";
+  error: typed.Get<typeof viewerGetBadRequest>;
+} | {
+  status: \\"internal_server_error\\";
+  error: typed.Get<typeof viewerGetInternalServerError>;
+} | GenericErrors;
+
+/* Get info about viewer by access token */
+export const viewerGet = createEffect<ViewerGet, ViewerGetDone, ViewerGetFail>({
+  async handler({
+    header
+  }) {
+    const name = \\"viewerGet.body\\";
+    const answer = await requestFx({
+      path: \\"/viewer\\",
+      method: \\"GET\\",
+      header
+    });
+
+    switch (answer.status) {
+      case 200:
+        return {
+          status: \\"ok\\",
+          answer: parseWith(name, viewerGetOk, answer.body)
+        };
+
+      case 400:
+        throw {
+          status: \\"bad_request\\",
+          error: parseWith(name, viewerGetBadRequest, answer.body)
+        };
+
+      case 500:
+        throw {
+          status: \\"internal_server_error\\",
+          error: parseWith(name, viewerGetInternalServerError, answer.body)
+        };
+
+      default:
+        throw {
+          status: 'unknown_status',
+          error: {
+            status: answer.status,
+            body: answer.body
+          }
+        };
+    }
+  }
+
+});
+//#endregion viewerGet
+
 "
 `;
 
