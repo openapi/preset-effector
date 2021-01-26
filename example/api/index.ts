@@ -79,7 +79,7 @@ function parseByStatus<
 
 //#endregion prebuilt code/* --- */
 //#region oauthAuthorizeRequest
-interface OauthAuthorizeRequest {
+export interface OauthAuthorizeRequest {
   body: {
     /* responseType is set to code indicating that you want an authorization code as the response. */
     responseType: 'code';
@@ -195,7 +195,7 @@ export const oauthAuthorizeRequest = createEffect<
 
 /* --- */
 //#region accessRecoverySendEmail
-interface AccessRecoverySendEmail {
+export interface AccessRecoverySendEmail {
   body: {
     email: string;
   };
@@ -253,7 +253,7 @@ export const accessRecoverySendEmail = createEffect<
 
 /* --- */
 //#region accessRecoverySetPassword
-interface AccessRecoverySetPassword {
+export interface AccessRecoverySetPassword {
   body: {
     password: string;
     code: string;
@@ -314,7 +314,7 @@ export const accessRecoverySetPassword = createEffect<
 
 /* --- */
 //#region registerRequest
-interface RegisterRequest {
+export interface RegisterRequest {
   body: {
     email: string;
   };
@@ -376,7 +376,7 @@ export const registerRequest = createEffect<
 
 /* --- */
 //#region registerConfirmation
-interface RegisterConfirmation {
+export interface RegisterConfirmation {
   body: {
     confirmationCode: string;
     firstName: string;
@@ -439,7 +439,7 @@ export const registerConfirmation = createEffect<
 
 /* --- */
 //#region sessionCreate
-interface SessionCreate {
+export interface SessionCreate {
   body: {
     email: string;
     password: string;
@@ -498,7 +498,7 @@ export const sessionCreate = createEffect<
 
 /* --- */
 //#region sessionGet
-interface SessionGet {}
+export interface SessionGet {}
 
 /* Session exists */
 export const sessionGetOk = typed.object({
@@ -552,7 +552,7 @@ export const sessionGet = createEffect<
 
 /* --- */
 //#region sessionDelete
-interface SessionDelete {
+export interface SessionDelete {
   body: {
     deleteAllSessions: boolean;
   };

@@ -159,7 +159,7 @@ test('render', () => {
       ),
     ),
   ).toMatchInlineSnapshot(`
-    "type RegisterConfirmation = {
+    "export type RegisterConfirmation = {
       body: {
         /* Send password recovery confirmation code to email
          * Add another example description
