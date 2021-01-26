@@ -66,7 +66,7 @@ function parseByStatus<
 
 //#endregion prebuilt code/* --- */
 //#region oauthToken
-type OauthToken = {
+export type OauthToken = {
   body: {
     grant_type: \\"authorization_code\\";
 
@@ -133,7 +133,7 @@ export const oauthToken = createEffect<OauthToken, OauthTokenDone, OauthTokenFai
 
 /* --- */
 //#region viewerGet
-type ViewerGet = {
+export type ViewerGet = {
   header: {
     \\"X-Access-Token\\": string;
   };

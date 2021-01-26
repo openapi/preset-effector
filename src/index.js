@@ -127,10 +127,12 @@ function createParamsTypes(name, { requestBody, parameters }) {
     members.push(member);
   }
 
-  return t.tsTypeAliasDeclaration(
-    t.identifier(changeCase.pascalCase(name)),
-    null,
-    t.tsTypeLiteral(members),
+  return t.exportNamedDeclaration(
+    t.tsTypeAliasDeclaration(
+      t.identifier(changeCase.pascalCase(name)),
+      null,
+      t.tsTypeLiteral(members),
+    ),
   );
 }
 
