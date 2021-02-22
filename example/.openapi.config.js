@@ -12,6 +12,4 @@ module.exports = {
     ],
   ],
   outputDir: `${__dirname}/api`,
-  mode: 'dev',
-  templateFileNameCode: 'index.ts',
 };

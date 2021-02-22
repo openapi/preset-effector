@@ -75,26 +75,54 @@ const METHOD = `
 //#endregion {{METHOD_NAME}}
 `.trim();
 
-module.exports = ({
-  effectorImport = 'effector',
-  requestName = 'requestFx',
-  requestPath = './request',
-} = {}) => ({
-  importRequest: 'disabled',
-  disableTypesGenerate: true,
+module.exports = (
+  {
+    effectorImport = 'effector',
+    requestName = 'requestFx',
+    requestPath = './request',
+    fileName = null,
+  } = {},
+  { changeCase, root },
+) => {
+  let before = '';
+  const operations = new Set();
 
-  templateFileNameCode: ({ swaggerData, changeCase }) =>
-    `${changeCase.paramCase(swaggerData.info.title)}.ts`,
+  return {
+    preComponents() {
+      before = compileTemplate(BEFORE, {
+        TITLE: root().info.title,
+        VERSION: root().info.version,
+        EFFECTOR: effectorImport,
+        REQUEST_NAME: requestName,
+        REQUEST_PATH: requestPath,
+      });
+    },
+    onOperation(pattern, method, operation) {
+      const name = operation.operationId;
+      operations.add(
+        compileTemplate(METHOD, {
+          METHOD_NAME: changeCase.camelCase(name),
+          METHOD_CONTENT: renderProgram(
+            createEffect({ name, path: pattern, method }, operation, {
+              requestName,
+            }),
+          ),
+        }),
+      );
+    },
+    build(fs) {
+      const apiFileName =
+        fileName || `${changeCase.paramCase(root().info.title)}.ts`;
 
-  templateCodeBefore: ({ swaggerData }) =>
-    compileTemplate(BEFORE, {
-      TITLE: swaggerData.info.title,
-      VERSION: swaggerData.info.version,
-      EFFECTOR: effectorImport,
-      REQUEST_NAME: requestName,
-      REQUEST_PATH: requestPath,
-    }),
+      const content = [before, ...operations].join('\n');
 
+      fs.addFile(apiFileName, content);
+    },
+  };
+};
+
+/*
+const demo = () => ({
   templateRequestCode: (
     { name, method, url },
     { requestSwaggerData, changeCase },
@@ -108,3 +136,4 @@ module.exports = ({
       ),
     }),
 });
+*/
