@@ -1,29 +1,30 @@
 const t = require('@babel/types');
+const changeCase = require('change-case');
 const { addComment } = require('./comments');
 
 const create = {
   object(schema) {
+    const properties = schema.properties
+      ? Object.keys(schema.properties).map((name) => {
+          const property = t.objectProperty(
+            t.identifier(name),
+            createContract(
+              schema.properties[name],
+              (schema.required || []).includes(name),
+            ),
+          );
+
+          if (schema.properties[name].description) {
+            addComment(property, schema.properties[name].description);
+          }
+
+          return property;
+        })
+      : [];
+
     return t.callExpression(
       t.memberExpression(t.identifier('typed'), t.identifier('object')),
-      [
-        t.objectExpression(
-          Object.keys(schema.properties).map((name) => {
-            const property = t.objectProperty(
-              t.identifier(name),
-              createContract(
-                schema.properties[name],
-                (schema.required || []).includes(name),
-              ),
-            );
-
-            if (schema.properties[name].description) {
-              addComment(property, schema.properties[name].description);
-            }
-
-            return property;
-          }),
-        ),
-      ],
+      [t.objectExpression(properties)],
     );
   },
   string(schema) {
@@ -45,12 +46,21 @@ const create = {
     return t.memberExpression(t.identifier('typed'), t.identifier('boolean'));
   },
   array(schema) {
+    let item = anyContract();
+    if (schema.items && Object.keys(schema.items).length !== 0) {
+      item = createContract(schema.items);
+    }
+
     return t.callExpression(
       t.memberExpression(t.identifier('typed'), t.identifier('array')),
-      [createContract(schema.items)],
+      [item],
     );
   },
 };
+
+function anyContract() {
+  return t.memberExpression(t.identifier('custom'), t.identifier('any'));
+}
 
 function oneOf(variants) {
   return t.callExpression(
@@ -71,13 +81,35 @@ function allOf(variants) {
   );
 }
 
+function referenceToContract(name) {
+  return t.identifier(changeCase.camelCase(name));
+}
+
+function getNameFromRef(ref) {
+  return ref.split('/').pop();
+}
+
+function correctType(schema) {
+  if (!schema.type) {
+    if (typeof schema.properties === 'object') {
+      schema.type = 'object';
+    }
+    if (typeof schema.items === 'object') {
+      schema.type = 'array';
+    }
+  }
+}
+
 function createContract(schema, required = true) {
-  if (schema.oneOf) return oneOf(schema.oneOf);
-  if (schema.anyOf) return anyOf(schema.anyOf);
-  if (schema.allOf) return allOf(schema.allOf);
+  correctType(schema);
 
   const creator = create[schema.type];
   if (!creator) {
+    if (schema.oneOf) return oneOf(schema.oneOf);
+    if (schema.anyOf) return anyOf(schema.anyOf);
+    if (schema.allOf) return allOf(schema.allOf);
+    if (schema.$ref) return referenceToContract(getNameFromRef(schema.$ref));
+
     console.info(schema);
     throw new Error(`type "${schema.type}" is not supported by contracts`);
   }

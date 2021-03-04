@@ -1,5 +1,10 @@
 const { compileTemplate } = require('./src/template');
-const { renderProgram, createEffect } = require('./src');
+const {
+  createEffect,
+  createSchemaContract,
+  renderAst,
+  renderProgram,
+} = require('./src');
 
 const BEFORE = `
 // {{TITLE}} {{VERSION}}
@@ -82,12 +87,22 @@ module.exports = (
     requestPath = './request',
     fileName = null,
   } = {},
-  { changeCase, root },
+  internal,
 ) => {
+  const { changeCase, root, isRef, resolveRef } = internal;
   let before = '';
   const operations = new Set();
+  const schemas = new Set();
+
+  function maybeRef(object) {
+    if (isRef(object)) {
+      return resolveRef(object.$ref);
+    }
+    return object;
+  }
 
   return {
+    name: 'effector-openapi-preset',
     preComponents() {
       before = compileTemplate(BEFORE, {
         TITLE: root().info.title,
@@ -97,6 +112,9 @@ module.exports = (
         REQUEST_PATH: requestPath,
       });
     },
+    onSchema(name, schema) {
+      schemas.add(renderProgram(createSchemaContract(name, schema)));
+    },
     onOperation(pattern, method, operation) {
       const name = operation.operationId;
       operations.add(
@@ -105,6 +123,9 @@ module.exports = (
           METHOD_CONTENT: renderProgram(
             createEffect({ name, path: pattern, method }, operation, {
               requestName,
+              isRef,
+              resolveRef,
+              maybeRef,
             }),
           ),
         }),
@@ -114,7 +135,7 @@ module.exports = (
       const apiFileName =
         fileName || `${changeCase.paramCase(root().info.title)}.ts`;
 
-      const content = [before, ...operations].join('\n');
+      const content = [before, ...schemas, ...operations].join('\n\n');
 
       fs.addFile(apiFileName, content);
     },

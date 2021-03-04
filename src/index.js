@@ -48,22 +48,24 @@ function createTypeDoneVariant({ status, contractName }) {
   ]);
 }
 
-function createDoneContracts(name, responses) {
+function createDoneContracts(name, responses, { maybeRef }) {
   const variants = Object.keys(responses).filter((code) => code < 400);
 
   const contracts = variants.map((code) => {
     const contractName =
       changeCase.camelCase(name) + changeCase.pascalCase(status[code].code);
-    const contract = responses[code].content
-      ? createContract(responses[code].content['application/json'].schema)
+    const response = maybeRef(responses[code]);
+    const contract = response.content
+      ? createContract(response.content['application/json'].schema)
       : createNullContract();
+
     const ast = t.exportNamedDeclaration(
       t.variableDeclaration('const', [
         t.variableDeclarator(t.identifier(contractName), contract),
       ]),
     );
-    if (responses[code].description) {
-      addComment(ast, responses[code].description);
+    if (response.description) {
+      addComment(ast, response.description);
     }
     return ast;
   });
@@ -79,16 +81,17 @@ function createPropertyName(name) {
   return t.stringLiteral(name);
 }
 
-function createParamsTypes(name, { requestBody, parameters }) {
+function createParamsTypes(name, { requestBody, parameters, maybeRef }) {
   const members = [];
 
   if (requestBody) {
-    const schema = requestBody.content['application/json'].schema;
+    const body = maybeRef(requestBody);
+    const schema = body.content['application/json'].schema;
     const member = t.tsPropertySignature(
       t.identifier('body'),
       t.tsTypeAnnotation(createInterface(schema)),
     );
-    member.optional = !requestBody.required;
+    member.optional = !body.required;
     members.push(member);
   }
 
@@ -108,6 +111,7 @@ function createParamsTypes(name, { requestBody, parameters }) {
     const { required, children } = dataTypes[name];
     const schema = t.tsTypeLiteral(
       children.map(({ name, required, schema, content, description }) => {
+        if (!name) console.log(schema, content, parameters);
         const property = t.tsPropertySignature(
           createPropertyName(name),
           t.tsTypeAnnotation(
@@ -155,22 +159,23 @@ function createDoneTypes(name, responses) {
   );
 }
 
-function createFailContracts(name, responses) {
+function createFailContracts(name, responses, { maybeRef }) {
   const variants = Object.keys(responses).filter((code) => code >= 400);
 
   const contracts = variants.map((code) => {
     const contractName =
       changeCase.camelCase(name) + changeCase.pascalCase(status[code].code);
-    const contract = responses[code].content
-      ? createContract(responses[code].content['application/json'].schema)
+    const response = maybeRef(responses[code]);
+    const contract = response.content
+      ? createContract(response.content['application/json'].schema)
       : createNullContract();
     const ast = t.exportNamedDeclaration(
       t.variableDeclaration('const', [
         t.variableDeclarator(t.identifier(contractName), contract),
       ]),
     );
-    if (responses[code].description) {
-      addComment(ast, responses[code].description);
+    if (response.description) {
+      addComment(ast, response.description);
     }
     return ast;
   });
@@ -293,33 +298,41 @@ function createRequestParams(
 function createEffect(
   { name, path, method },
   { description, requestBody, responses, parameters = [] },
-  { requestName } = {},
+  { requestName, isRef, resolveRef, maybeRef } = {},
 ) {
   const constName = changeCase.camelCase(name);
   const TypeName = changeCase.pascalCase(name);
 
-  const paramsTypes = createParamsTypes(name, { requestBody, parameters });
-
-  const doneContracts = createDoneContracts(name, responses);
-  const failContracts = createFailContracts(name, responses);
-  const doneTypes = createDoneTypes(name, responses);
-  const failTypes = createFail(name, responses);
-
-  const cases = Object.keys(responses).map((_code) => {
-    const code = Number.parseInt(_code, 10);
-    const statusName = changeCase.snakeCase(status[code].code);
-    const contractName = `${constName}${changeCase.pascalCase(
-      status[code].label,
-    )}`;
-
-    return t.objectProperty(
-      t.numericLiteral(code),
-      t.arrayExpression([
-        t.stringLiteral(statusName),
-        t.identifier(contractName),
-      ]),
-    );
+  const paramsTypes = createParamsTypes(name, {
+    requestBody,
+    parameters,
+    isRef,
+    resolveRef,
+    maybeRef,
   });
+
+  const doneContracts = createDoneContracts(name, responses, { maybeRef });
+  const failContracts = createFailContracts(name, responses, { maybeRef });
+  const doneTypes = createDoneTypes(name, responses, { maybeRef });
+  const failTypes = createFail(name, responses, { maybeRef });
+
+  const cases = Object.keys(responses)
+    .filter((code) => status[code] !== undefined)
+    .map((_code) => {
+      const code = Number.parseInt(_code, 10);
+      const statusName = changeCase.snakeCase(status[code].code);
+      const contractName = `${constName}${changeCase.pascalCase(
+        status[code].label,
+      )}`;
+
+      return t.objectProperty(
+        t.numericLiteral(code),
+        t.arrayExpression([
+          t.stringLiteral(statusName),
+          t.identifier(contractName),
+        ]),
+      );
+    });
 
   const statusParser = t.callExpression(t.identifier('parseByStatus'), [
     t.identifier('name'),
@@ -374,6 +387,29 @@ function createEffect(
   ];
 }
 
+function createSchemaContract(name, schema) {
+  const contract = createContract(schema);
+
+  const contractAst = t.exportNamedDeclaration(
+    t.variableDeclaration('const', [
+      t.variableDeclarator(t.identifier(changeCase.camelCase(name)), contract),
+    ]),
+  );
+  if (schema.description) {
+    addComment(contractAst, schema.description);
+  }
+
+  const typeAst = t.exportNamedDeclaration(
+    t.tsTypeAliasDeclaration(
+      t.identifier(changeCase.pascalCase(name)),
+      null,
+      contractGet({ contractName: name }),
+    ),
+  );
+
+  return [contractAst, typeAst];
+}
+
 function renderProgram(nodes) {
   return renderAst(t.program([...nodes]));
 }
@@ -385,4 +421,9 @@ function renderAst(ast) {
   }).code;
 }
 
-module.exports = { createEffect, renderProgram, renderAst };
+module.exports = {
+  createEffect,
+  createSchemaContract,
+  renderAst,
+  renderProgram,
+};

@@ -80,11 +80,29 @@ function anyOf(variants) {
   );
 }
 
+function getNameFromRef(ref) {
+  return ref.split('/').pop();
+}
+
+function referenceToType(name) {
+  return t.tsTypeReference(t.identifier(name));
+}
+
+function correctType(schema) {
+  if (!schema.type) {
+    if (typeof schema.properties === 'object') {
+      schema.type = 'object';
+    }
+  }
+}
+
 function createInterface(schema, _required = true) {
+  correctType(schema);
+
   if (schema.oneOf) return oneOf(schema.oneOf);
   if (schema.allOf) return allOf(schema.allOf);
   if (schema.anyOf) return anyOf(schema.anyOf);
-
+  if (schema.$ref) return referenceToType(getNameFromRef(schema.$ref));
   const creator = create[schema.type];
 
   if (!creator) {
