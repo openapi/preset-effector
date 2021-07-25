@@ -22,6 +22,16 @@ test('object with enum', () => {
   `);
 });
 
+test('object without properties', () => {
+  expect(
+    renderAst(
+      createContract({
+        type: 'object',
+      }),
+    ),
+  ).toMatchInlineSnapshot(`"typed.object({})"`);
+});
+
 test('nested objects', () => {
   expect(
     renderAst(

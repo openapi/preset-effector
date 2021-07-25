@@ -3,27 +3,24 @@ const { addComment } = require('./comments');
 
 const create = {
   object(schema) {
+    const properties = Object.keys(schema.properties || {}).map((name) => {
+      const property = t.objectProperty(
+        t.identifier(name),
+        createContract(
+          schema.properties[name],
+          (schema.required || []).includes(name),
+        ),
+      );
+
+      if (schema.properties[name].description) {
+        addComment(property, schema.properties[name].description);
+      }
+
+      return property;
+    });
     return t.callExpression(
       t.memberExpression(t.identifier('typed'), t.identifier('object')),
-      [
-        t.objectExpression(
-          Object.keys(schema.properties).map((name) => {
-            const property = t.objectProperty(
-              t.identifier(name),
-              createContract(
-                schema.properties[name],
-                (schema.required || []).includes(name),
-              ),
-            );
-
-            if (schema.properties[name].description) {
-              addComment(property, schema.properties[name].description);
-            }
-
-            return property;
-          }),
-        ),
-      ],
+      [t.objectExpression(properties)],
     );
   },
   string(schema) {
