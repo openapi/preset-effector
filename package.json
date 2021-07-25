@@ -1,6 +1,6 @@
 {
   "name": "effector-openapi-preset",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Generate API layer from Swagger by openapi",
   "main": "index.js",
   "scripts": {
