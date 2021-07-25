@@ -135,7 +135,7 @@ export const oauthToken = createEffect<OauthToken, OauthTokenDone, OauthTokenFai
 //#region viewerGet
 export type ViewerGet = {
   header: {
-    \\"X-Access-Token\\": string;
+    Authorization: string;
   };
 };
 
@@ -172,8 +172,8 @@ export const viewerGet = createEffect<ViewerGet, ViewerGetDone, ViewerGetFail>({
   }) {
     const name = \\"viewerGet.body\\";
     const response = await requestFx({
-      path: \\"/viewer\\",
-      method: \\"GET\\",
+      path: \\"/viewer.get\\",
+      method: \\"POST\\",
       header
     });
     return parseByStatus(name, response, {
