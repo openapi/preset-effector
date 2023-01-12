@@ -3,7 +3,7 @@ const { addComment } = require('./comments');
 
 const create = {
   object(schema) {
-    const properties = Object.keys(schema.properties).map((name) => {
+    const properties = Object.keys(schema.properties || {}).map((name) => {
       const property = t.tsPropertySignature(
         t.identifier(name),
         t.tsTypeAnnotation(
@@ -85,7 +85,7 @@ function createInterface(schema, _required = true) {
   if (schema.allOf) return allOf(schema.allOf);
   if (schema.anyOf) return anyOf(schema.anyOf);
 
-  const creator = create[schema.type];
+  const creator = create[schema.type || 'object'];
 
   if (!creator) {
     console.info(schema);
