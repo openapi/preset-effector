@@ -83,7 +83,9 @@ function createParamsTypes(name, { requestBody, parameters }) {
   const members = [];
 
   if (requestBody) {
-    const schema = requestBody.content['application/json'].schema;
+    const schema = requestBody.content['application/json']?.schema 
+      || requestBody.content['multipart/form-data'].schema;
+    
     const member = t.tsPropertySignature(
       t.identifier('body'),
       t.tsTypeAnnotation(createInterface(schema)),
