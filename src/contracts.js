@@ -73,7 +73,7 @@ function createContract(schema, required = true) {
   if (schema.anyOf) return anyOf(schema.anyOf);
   if (schema.allOf) return allOf(schema.allOf);
 
-  const creator = create[schema.type];
+  const creator = create[schema.type || 'object'];
   if (!creator) {
     console.info(schema);
     throw new Error(`type "${schema.type}" is not supported by contracts`);
