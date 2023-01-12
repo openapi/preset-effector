@@ -1,11 +1,11 @@
-# effector-openapi-preset
+# openapi-preset-effector
 
 ## Usage
 
 #### Install openapi and preset
 
 ```shell
-yarn add -D openapi@^1.0.0 effector-openapi-preset
+yarn add -D openapi@^1.0.0 openapi-preset-effector
 ```
 
 #### Create config
@@ -15,7 +15,7 @@ yarn add -D openapi@^1.0.0 effector-openapi-preset
 module.exports = {
   file: 'path to local or remote swagger v2 or v3 spec',
   outputDir: 'relative path to generated api directory',
-  presets: ['effector-openapi-preset'],
+  presets: ['openapi-preset-effector'],
 };
 ```
 
@@ -28,7 +28,7 @@ module.exports = {
   outputDir: 'relative path to generated api directory',
   presets: [
     [
-      'effector-openapi-preset',
+      'openapi-preset-effector',
       {
         effectorImport: 'effector-root',
         requestName: 'fetchFx',
