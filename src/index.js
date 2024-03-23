@@ -83,9 +83,10 @@ function createParamsTypes(name, { requestBody, parameters }) {
   const members = [];
 
   if (requestBody) {
-    const schema = requestBody.content['application/json']?.schema 
-      || requestBody.content['multipart/form-data'].schema;
-    
+    const schema =
+      requestBody.content['application/json']?.schema ||
+      requestBody.content['multipart/form-data'].schema;
+
     const member = t.tsPropertySignature(
       t.identifier('body'),
       t.tsTypeAnnotation(createInterface(schema)),
@@ -338,7 +339,7 @@ function createEffect(
         t.identifier('handler'),
         createHandlerParams({ parameters, requestBody }),
         handlerFunctionBody({
-          name: t.stringLiteral(`${constName}.body`),
+          name: t.stringLiteral(`${constName}Fx.body`),
           params: createRequestParams(
             { path, method },
             { parameters, requestBody },
@@ -359,7 +360,7 @@ function createEffect(
   ]);
 
   const expression = exportConst({
-    name: t.identifier(constName),
+    name: t.identifier(`${constName}Fx`),
     value: effectCall,
   });
   if (description) {
