@@ -231,7 +231,7 @@ test('render', () => {
     /* Send password recovery confirmation code to email
      * Add another example description
      * This is just a demo */
-    export const registerConfirmation = createEffect<RegisterConfirmation, RegisterConfirmationDone, RegisterConfirmationFail>({
+    export const registerConfirmationFx = createEffect<RegisterConfirmation, RegisterConfirmationDone, RegisterConfirmationFail>({
       async handler({
         body,
         path,
@@ -239,7 +239,7 @@ test('render', () => {
         header,
         cookie
       }) {
-        const name = \\"registerConfirmation.body\\";
+        const name = \\"registerConfirmationFx.body\\";
         const response = await requestFx({
           path: \`/register/\${path.first}/confirmation/\${path.second}\`,
           method: \\"POST\\",
